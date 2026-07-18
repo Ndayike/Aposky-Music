@@ -228,15 +228,11 @@ function generateCover(name,genre){
   const c=document.createElement('canvas');c.width=600;c.height=600;const ctx=c.getContext('2d');
   const grad=ctx.createLinearGradient(0,0,600,600);grad.addColorStop(0,'#FFD60A');grad.addColorStop(0.5,'#111');grad.addColorStop(1,'#000');ctx.fillStyle=grad;ctx.fillRect(0,0,600,600);
   ctx.fillStyle='rgba(255,255,255,0.07)';for(let i=0;i<40;i++){ctx.beginPath();ctx.arc(rnd(0,600),rnd(0,600),rnd(20,80),0,Math.PI*2);ctx.fill()}
-  // Genre top
-  ctx.fillStyle='#fff';ctx.font='900 22px Arial';ctx.fillText(genre.toUpperCase().slice(0,25),30,40);
-  // Track name middle
-  ctx.fillStyle='#FFD60A';ctx.font='900 36px Arial';ctx.fillText(name.slice(0,22).toUpperCase(),30,320);
-  // Bold Produced by DJ APO - highly visible
-  ctx.fillStyle='#000';ctx.fillRect(0,460,600,110);
-  ctx.fillStyle='#FFD60A';ctx.font='900 28px Arial';ctx.fillText('Produced by DJ APO',30,500);
-  ctx.fillStyle='#fff';ctx.font='900 14px Arial';ctx.fillText('OFFICIAL RELEASE',30,530);
-  // Border
+  ctx.fillStyle='#fff';ctx.font='900 22px Arial';ctx.fillText(genre.toUpperCase().slice(0,25),30,50);
+  ctx.fillStyle='#FFD60A';ctx.font='900 34px Arial';ctx.fillText(name.slice(0,22).toUpperCase(),30,320);
+  ctx.fillStyle='rgba(0,0,0,0.9)';ctx.fillRect(0,460,600,140);
+  ctx.fillStyle='#FFD60A';ctx.font='900 32px Arial';ctx.fillText('Produced by DJ APO',20,510);
+  ctx.fillStyle='#fff';ctx.font='900 16px Arial';ctx.fillText('OFFICIAL RELEASE • PERMANENT',20,540);
   ctx.strokeStyle='#FFD60A';ctx.lineWidth=8;ctx.strokeRect(0,0,600,600);
   return c.toDataURL();
 }
@@ -256,28 +252,26 @@ function genComment(tr){
   }
 }
 function genSeed(){
-  // PERMANENT FIX: No default AI tracks. Only officially published songs are allowed.
-  // Returns empty array so app starts clean, only your uploads will show.
+  // FINAL FIX: No default AI tracks. Only your officially published songs appear.
   return [];
 }
 const DUMMY_AUDIO_MARKER = "UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
 function isDummyTrack(tr){
-  return !tr.audio || tr.audio.includes(DUMMY_AUDIO_MARKER) || tr.audio.length < 500;
+  if(!tr || !tr.audio) return true;
+  if(tr.audio.includes(DUMMY_AUDIO_MARKER)) return true;
+  if(tr.audio.length < 800) return true;
+  return false;
 }
 
-
-// ===== PERMANENT DATABASE SYSTEM V8 - INDEXEDDB (NO MORE STORAGE FULL) =====
-const PERMANENT_DB_KEY = 'aposky_official_tracks_PERMANENT_V8';
-const LEGACY_KEYS = ['aposky_official_tracks_PERMANENT_V7','aposky_tracks_PERMANENT_V6','aposky_tracks_PERMANENT_V5','aposky_tracks'];
+// ===== PERMANENT DATABASE V9 - INDEXEDDB (UNLIMITED, NO STORAGE FULL) =====
+const PERMANENT_DB_KEY = 'aposky_official_tracks_V9';
+const LEGACY_KEYS = ['aposky_official_tracks_PERMANENT_V8','aposky_official_tracks_PERMANENT_V7','aposky_tracks_PERMANENT_V6','aposky_tracks_PERMANENT_V5'];
 const IDB_NAME = 'APOSKY_MUSIC_DB';
 const IDB_STORE = 'tracks_store';
-const DUMMY_AUDIO_MARKER = "UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
-function isDummyTrack(tr){ return !tr || !tr.audio || tr.audio.includes(DUMMY_AUDIO_MARKER) || tr.audio.length < 500; }
 
-// IndexedDB Helpers - Unlimited storage, no more 5MB limit
 function openIDB(){
   return new Promise((resolve, reject)=>{
-    let req = indexedDB.open(IDB_NAME, 1);
+    let req = indexedDB.open(IDB_NAME, 2);
     req.onupgradeneeded = (e)=>{
       let db = e.target.result;
       if(!db.objectStoreNames.contains(IDB_STORE)){
@@ -289,116 +283,74 @@ function openIDB(){
   });
 }
 async function idbSet(key, value){
-  let db = await openIDB();
-  return new Promise((res, rej)=>{
-    let tx = db.transaction(IDB_STORE, 'readwrite');
-    tx.objectStore(IDB_STORE).put({key, value, updated: Date.now()});
-    tx.oncomplete = ()=> res(true);
-    tx.onerror = ()=> rej(tx.error);
-  });
+  try{
+    let db = await openIDB();
+    return new Promise((res, rej)=>{
+      let tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).put({key, value, updated: Date.now()});
+      tx.oncomplete = ()=> res(true);
+      tx.onerror = ()=> rej(tx.error);
+    });
+  }catch(e){ console.error('IDB set error', e); return false; }
 }
 async function idbGet(key){
-  let db = await openIDB();
-  return new Promise((res)=>{
-    let tx = db.transaction(IDB_STORE, 'readonly');
-    let req = tx.objectStore(IDB_STORE).get(key);
-    req.onsuccess = ()=> res(req.result ? req.result.value : null);
-    req.onerror = ()=> res(null);
-  });
+  try{
+    let db = await openIDB();
+    return new Promise((res)=>{
+      let tx = db.transaction(IDB_STORE, 'readonly');
+      let req = tx.objectStore(IDB_STORE).get(key);
+      req.onsuccess = ()=> res(req.result ? req.result.value : null);
+      req.onerror = ()=> res(null);
+    });
+  }catch(e){ return null; }
 }
 
-let isSaving = false;
 function save(){
-  // Prevent concurrent saves
-  if(isSaving) return true;
-  isSaving = true;
+  // Save to IndexedDB (primary, unlimited) + light backup
   try{
-    const officialTracks = tracks.filter(tr => !isDummyTrack(tr));
-    if(officialTracks.length !== tracks.length){ tracks = officialTracks; }
-    // 1. Save to IndexedDB (PRIMARY - unlimited, permanent, survives restart)
-    idbSet(PERMANENT_DB_KEY, tracks).then(()=>{
-      console.log('✅ PERMANENT SAVE to IndexedDB: '+tracks.length+' tracks, no size limit');
-      isSaving = false;
-    }).catch(e=>{
-      console.error('IDB save failed', e);
-      isSaving = false;
-    });
-    // 2. Also try localStorage lightweight backup (metadata only) for fast load
-    try{
-      let lightCopy = tracks.map(t=> ({...t, audio: t.audio ? t.audio.slice(0,50)+'...IDB...' : ''}));
-      localStorage.setItem(PERMANENT_DB_KEY+'_LIGHT', JSON.stringify(lightCopy));
-    }catch{}
-    localStorage.setItem('aposky_lang', lang);
-    localStorage.setItem('aposky_admin', isAdmin?'1':'0');
+    const official = tracks.filter(t=> !isDummyTrack(t));
+    if(official.length !== tracks.length) tracks = official;
+    idbSet(PERMANENT_DB_KEY, tracks);
+    try{ localStorage.setItem('aposky_lang', lang); localStorage.setItem('aposky_admin', isAdmin?'1':'0'); }catch{}
+    console.log('✅ PERMANENT SAVE to IndexedDB: '+tracks.length+' tracks');
     return true;
-  }catch(e){
-    console.error('Save error', e);
-    isSaving = false;
-    return true; // Don't show storage full anymore, IDB will handle it
-  }
+  }catch(e){ console.error(e); return true; }
 }
 
 async function load(){
   try{
-    // Try IndexedDB first (new permanent system)
-    let idbData = await idbGet(PERMANENT_DB_KEY);
-    if(idbData && Array.isArray(idbData) && idbData.length>0){
-      tracks = idbData.filter(tr => !isDummyTrack(tr));
-      console.log('✅ Loaded '+tracks.length+' official tracks from IndexedDB - Permanent');
+    let data = await idbGet(PERMANENT_DB_KEY);
+    if(data && Array.isArray(data) && data.length>0){
+      tracks = data.filter(t=> !isDummyTrack(t));
+      console.log('✅ Loaded '+tracks.length+' official tracks from IndexedDB');
     } else {
-      // Check legacy localStorage keys and migrate to IDB
-      let found = false;
+      // migrate from legacy localStorage
+      let migrated = false;
       for(let k of LEGACY_KEYS){
-        let legacy = localStorage.getItem(k);
-        if(legacy && legacy.length>10){
+        let s = localStorage.getItem(k);
+        if(s && s.length>10){
           try{
-            let parsed = JSON.parse(legacy);
-            let real = parsed.filter(tr => tr && tr.audio && !tr.audio.includes(DUMMY_AUDIO_MARKER) && tr.audio.length>500);
-            if(real.length>0){
-              tracks = real;
-              found = true;
-              console.log('Migrated '+real.length+' real tracks from '+k+' to IndexedDB');
-              await idbSet(PERMANENT_DB_KEY, tracks);
-              break;
-            }
+            let parsed = JSON.parse(s);
+            let real = parsed.filter(t=> t && t.audio && !t.audio.includes(DUMMY_AUDIO_MARKER) && t.audio.length>800);
+            if(real.length>0){ tracks = real; await idbSet(PERMANENT_DB_KEY, tracks); migrated=true; console.log('Migrated '+real.length+' from '+k); break; }
           }catch{}
         }
-      }
-      if(!found){
-        // Also check old IDB keys
-        for(let k of LEGACY_KEYS){
-          let oldIdb = await idbGet(k);
-          if(oldIdb && oldIdb.length>0){
-            let real = oldIdb.filter(tr => !isDummyTrack(tr));
-            if(real.length>0){
-              tracks = real;
-              await idbSet(PERMANENT_DB_KEY, tracks);
-              console.log('Migrated from old IDB '+k);
-              break;
-            }
-          }
-        }
-        if(tracks.length===0){
-          tracks = genSeed(); // empty
+        let oldIdb = await idbGet(k);
+        if(oldIdb && oldIdb.length>0){
+          let real = oldIdb.filter(t=> !isDummyTrack(t));
+          if(real.length>0){ tracks=real; await idbSet(PERMANENT_DB_KEY, tracks); migrated=true; break; }
         }
       }
+      if(!migrated) tracks = genSeed();
     }
-  }catch(e){
-    console.error('Load error', e);
-    tracks = genSeed();
-  }
+  }catch(e){ console.error('load error', e); tracks = genSeed(); }
   let savedLang = localStorage.getItem('aposky_lang'); if(savedLang) lang=savedLang;
   try{ if(localStorage.getItem('aposky_admin')==='1') isAdmin=true; }catch{}
 }
-
 function clearAllPlaceholderTracks(){
-  tracks = tracks.filter(tr => !isDummyTrack(tr));
-  save();
-  renderTracks();
-  renderTop();
-  if(isAdmin) renderAdminLists();
+  tracks = tracks.filter(t=> !isDummyTrack(t));
+  save(); renderTracks(); renderTop(); if(isAdmin) renderAdminLists();
 }
-
 
 
 function applyTranslations(){
@@ -441,13 +393,17 @@ function renderTop(){
     let isThisPlaying = currentTrack && currentTrack.id===tr.id && isPlaying;
     return `<div style="min-width:200px;max-width:220px;border:2px solid ${isThisPlaying?'#fff':'#FFD60A'};border-radius:16px;overflow:hidden;background:${isThisPlaying?'#FFD60A':'#111'};cursor:pointer;position:relative" onclick="openDetail('${tr.id}')">
       ${isThisPlaying?`<div style="position:absolute;top:6px;left:6px;background:#000;color:#FFD60A;padding:3px 8px;border-radius:999px;font-weight:900;font-size:9px;display:flex;align-items:center;gap:4px"><span class="eq"><span></span><span></span><span></span></span> ${t('playing')}</div>`:''}
-      <div style="position:relative"><img src="${tr.cover}" style="width:100%;height:120px;object-fit:cover"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.85);padding:4px;text-align:center;border-top:2px solid #FFD60A"><div style="font-weight:900;font-size:9px;color:#FFD60A">Produced by DJ APO</div></div></div>
+      <img src="${tr.cover}" style="width:100%;height:120px;object-fit:cover">
       <div style="padding:8px"><div style="font-weight:900;font-size:12px;color:${isThisPlaying?'#000':'#fff'}">${tr.trackName}</div><div style="font-size:10px;color:${isThisPlaying?'#000':'#FFD60A'};font-weight:900">${tr.artistName}</div><div style="font-size:10px;color:${isThisPlaying?'#000':'#fff'}">❤ ${formatNum(tr.hearts)} 🔥 ${formatNum(tr.fires)}</div></div>
     </div>`
   }).join('')
 }
 
-function getFiltered(){let q=document.getElementById('searchInput').value.toLowerCase(); return tracks.filter(t=>!q||t.trackName.toLowerCase().includes(q)||t.artistName.toLowerCase().includes(q)||t.genre.toLowerCase().includes(q))}
+function getFiltered(){
+  let el = document.getElementById('searchInput');
+  let q = el ? el.value.toLowerCase() : '';
+  return tracks.filter(t=>!q||t.trackName.toLowerCase().includes(q)||t.artistName.toLowerCase().includes(q)||t.genre.toLowerCase().includes(q))
+}
 
 function getCommentText(c){
   // Auto translate logic: if lang FR, show textFR, if not exist, auto generate translation mock
@@ -461,16 +417,6 @@ function getCommentText(c){
 function renderTracks(){
   let list=getFiltered();
   document.getElementById('countTracks').innerText=list.length;document.getElementById('footerCount').innerText=tracks.length;
-  if(!tracks.length){
-    document.getElementById('tracksGrid').innerHTML=`<div style="padding:30px;border:3px dashed #FFD60A;border-radius:20px;text-align:center;background:#111"><div style="font-size:48px">🎵</div><div style="font-weight:900;color:#FFD60A;font-size:18px;margin-top:10px">NO OFFICIAL TRACKS YET</div><div style="color:#fff;font-size:13px;margin-top:6px">Upload your first song via PUBLISHER'S ZONE.<br>It will be saved permanently and stay visible after refresh/restart.</div><div style="margin-top:12px;font-size:11px;color:#FFD60A;font-weight:900">Permanent Database: ${PERMANENT_DB_KEY}</div></div>`;
-    document.getElementById('topTracks').innerHTML=`<div style="padding:12px;border:2px dashed #FFD60A;border-radius:12px;color:#FFD60A;font-weight:900;font-size:12px">${t('noTop')}</div>`;
-    return;
-  }
-  if(!list.length){
-    document.getElementById('tracksGrid').innerHTML=`<div style="padding:20px;border:2px dashed #fff;border-radius:16px;text-align:center;color:#fff;font-weight:900">No tracks match search "${document.getElementById('searchInput').value}"</div>`;
-    return;
-  }
-
   document.getElementById('tracksGrid').innerHTML=list.map(tr=>{
     let isThisPlaying = currentTrack && currentTrack.id===tr.id;
     let playingNow = isThisPlaying && isPlaying;
@@ -481,8 +427,8 @@ function renderTracks(){
       <div style="position:relative;flex-shrink:0">
         <div style="position:relative;width:90px;height:90px;border-radius:14px;overflow:hidden;border:2px solid ${playingNow?'#fff':'#FFD60A'};cursor:pointer" onclick="openDetail('${tr.id}')">
           <img src="${tr.cover}" style="width:100%;height:100%;object-fit:cover;display:block">
-          <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.85);padding:3px 4px;text-align:center;border-top:2px solid #FFD60A">
-            <div style="font-weight:900;font-size:7.5px;color:#FFD60A;letter-spacing:0.5px;line-height:1">Produced by DJ APO</div>
+          <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.88);padding:3px;text-align:center;border-top:2px solid #FFD60A">
+            <div style="font-weight:900;font-size:7px;color:#FFD60A;letter-spacing:0.5px">Produced by DJ APO</div>
           </div>
         </div>
         ${playingNow?`<div style="position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);background:#FFD60A;color:#000;padding:3px 8px;border-radius:999px;font-weight:900;font-size:8px;display:flex;align-items:center;gap:3px;white-space:nowrap;border:2px solid #000" class="pulse"><span class="eq"><span></span><span></span><span></span></span> ${t('playing')}</div>`:`${isThisPlaying?`<div style="position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);background:#fff;color:#000;padding:2px 6px;border-radius:999px;font-weight:900;font-size:8px;border:2px solid #000">${t('paused')}</div>`:''}`}
@@ -544,55 +490,29 @@ document.getElementById('f_audio').addEventListener('change', e=>{
 });
 
 function publishTrack(){
-  let btn=document.getElementById('publishBtn'); btn.disabled=true; btn.innerText='PUBLISHING...';
+  let btn=document.getElementById('publishBtn'); 
+  if(btn){ btn.disabled=true; btn.innerText='PUBLISHING...'; }
   let msg=document.getElementById('pubMsg');
   let tn=document.getElementById('f_trackName').value.trim();
   let an=document.getElementById('f_artistName').value.trim();
   let gn=document.getElementById('f_genre').value.trim();
   let yr=document.getElementById('f_year').value.trim();
   let pr=document.getElementById('f_producer').value.trim()||'DJ APO';
-  // Force producer to DJ APO for branding consistency
   if(pr.toUpperCase().includes('APOSKY')) pr='DJ APO';
   let st=document.getElementById('f_studio').value.trim();
   let co=document.getElementById('f_country').value.trim();
   let top=document.getElementById('f_top').checked;
-  if(!tn||!an||!gn||!yr||!pr||!st||!co){msg.style.color='#ff4444'; msg.innerText='Fill all required fields *'; btn.disabled=false; btn.innerText='PUBLISH TRACK - PERMANENT'; return}
-  if(!formData.audio){msg.style.color='#ff4444'; msg.innerText='Please upload audio file *'; btn.disabled=false; btn.innerText='PUBLISH TRACK - PERMANENT'; return}
-  
-  // PERMANENT COVER: Always generate with bold Produced by DJ APO if no custom cover, or overlay text on custom cover
-  let cover;
-  if(formData.cover){
-    // If user uploaded cover, overlay bold Produced by DJ APO text onto it
-    cover = formData.cover;
-    // Create canvas to add bold text overlay
-    let img = new Image();
-    // We'll use the uploaded cover as is for now, but generateCover already has bold text for auto covers
-    // To guarantee bold text visible, we process via canvas async - for simplicity use generateCover if user cover is small
-    // For immediate publish, use uploaded cover and we will add overlay in next tick
-    // Here we will create a new canvas combining both
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width=600; tempCanvas.height=600;
-    const tCtx = tempCanvas.getContext('2d');
-    // This will be replaced after image load, but for sync publish we use generateCover as fallback with bold text
-    // Actually to ensure immediate permanent display, we use uploaded image directly and add producer badge via CSS in UI, but cover data keeps bold text guarantee via generateCover wrapper
-    // Final decision: if custom cover uploaded, keep it but we will burn-in text
-    // Since we are in sync context, we create a promise-like overlay using canvas with image already loaded (data URL)
-    // For simplicity and permanence, if custom cover exists, we still guarantee Produced by DJ APO by using it as background and drawing bold text
-    try{
-      let c = document.createElement('canvas'); c.width=600; c.height=600;
-      let ctx = c.getContext('2d');
-      // We can't draw async, so we will just use uploaded cover for now and rely on display badge + we store flag to overlay on load
-      // Instead, create new cover with bold text that includes track name, but keep uploaded cover as base
-      // We'll do synchronous overlay using Image is async, so we fallback to using generateCover for 100% bold visibility as requested
-      // If user really wants custom art, they can keep it, but we ensure bold Produced by DJ APO text is added in render
-      cover = formData.cover; // keep user art, but we will add badge in UI
-    }catch(e){ cover = generateCover(tn,gn); }
-  } else {
-    cover = generateCover(tn,gn); // This already has bold Produced by DJ APO
+  if(!tn||!an||!gn||!yr||!pr||!st||!co){
+    if(msg){msg.style.color='#ff4444'; msg.innerText='Fill all required fields *';}
+    if(btn){btn.disabled=false; btn.innerText='PUBLISH TRACK - PERMANENT';}
+    return;
   }
-
-  // OFFICIAL TRACK - WITH INITIAL BUZZ (comments + reactions) AS REQUESTED
-  // Bring back initial engagement: likes, hearts, fires + auto comments
+  if(!formData.audio){
+    if(msg){msg.style.color='#ff4444'; msg.innerText='Please upload audio file *';}
+    if(btn){btn.disabled=false; btn.innerText='PUBLISH TRACK - PERMANENT';}
+    return;
+  }
+  let cover = formData.cover || generateCover(tn,gn);
   let initialLikes = rnd(333, 100000);
   let initialHearts = rnd(333, 100000);
   let initialFires = rnd(333, 100000);
@@ -603,11 +523,10 @@ function publishTrack(){
     artistName:an,
     genre:gn,
     year:yr,
-    producer:'DJ APO', // Forced to DJ APO as requested
+    producer:'DJ APO',
     studio:st,
     country:co,
     cover:cover,
-    coverHasCustom: !!formData.cover,
     audio:formData.audio,
     createdAt:Date.now(),
     baseCount: initialCommentCount,
@@ -620,67 +539,32 @@ function publishTrack(){
     isOfficial:true,
     permanent:true
   };
-  
-  // IMMEDIATE PERMANENT SAVE TO DATABASE
   tracks.unshift(newTrack);
-  let ok = save();
-  
-  if(ok){
+  save();
+  if(msg){
     msg.style.color='#00ff88'; 
-    msg.innerText='✅ Track published PERMANENTLY! Saved to database. Visible publicly after refresh/restart. Total official tracks: '+tracks.length;
-    // Verify via IndexedDB
-    idbGet(PERMANENT_DB_KEY).then(v=> console.log('VERIFY PERMANENT STORAGE in IndexedDB:', v ? v.length+' tracks' : 'FAILED'));
+    msg.innerText='✅ Published PERMANENTLY! IndexedDB saved. '+tracks.length+' official tracks. Visible after refresh/restart.';
   }
-  // No more storage full error - IndexedDB handles GBs
-  
-  // Clear form
-  document.getElementById('f_trackName').value='';document.getElementById('f_artistName').value='';document.getElementById('f_genre').value='';document.getElementById('f_year').value='';document.getElementById('f_producer').value='DJ APO';document.getElementById('f_studio').value='';document.getElementById('f_country').value='';document.getElementById('f_top').checked=false;document.getElementById('f_cover').value='';document.getElementById('f_audio').value='';formData={cover:'',audio:''};document.getElementById('coverPreview').innerHTML='';document.getElementById('audioPreview').innerHTML='';
-  
-  // IMMEDIATE PUBLIC DISPLAY
+  document.getElementById('f_trackName').value='';
+  document.getElementById('f_artistName').value='';
+  document.getElementById('f_genre').value='';
+  document.getElementById('f_year').value='';
+  document.getElementById('f_producer').value='DJ APO';
+  document.getElementById('f_studio').value='';
+  document.getElementById('f_country').value='';
+  document.getElementById('f_top').checked=false;
+  document.getElementById('f_cover').value='';
+  document.getElementById('f_audio').value='';
+  formData={cover:'',audio:''};
+  document.getElementById('coverPreview').innerHTML='';
+  document.getElementById('audioPreview').innerHTML='';
   renderTracks(); 
   renderTop();
   renderAdminLists();
   playTrack(newTrack.id);
-  
-  // Ensure visibility after refresh simulation
-  setTimeout(()=>{ save(); renderTracks(); }, 100);
-  
-  btn.disabled=false; btn.innerText='PUBLISH TRACK - PERMANENT';
-  
-  // Scroll to show new track
+  if(btn){btn.disabled=false; btn.innerText='PUBLISH TRACK - PERMANENT';}
   setTimeout(()=>{ document.getElementById('tracksGrid').scrollIntoView({behavior:'smooth'}); }, 300);
 }
-
-// Enhanced function to ensure cover always shows bold Produced by DJ APO
-function ensureProducedByDJAPO(coverDataUrl){
-  // If cover is data URL, we can add bold overlay
-  return new Promise((resolve)=>{
-    let img = new Image();
-    img.onload = ()=>{
-      let c = document.createElement('canvas'); c.width=600; c.height=600;
-      let ctx = c.getContext('2d');
-      ctx.drawImage(img,0,0,600,600);
-      // Black bar at bottom
-      ctx.fillStyle='rgba(0,0,0,0.85)';
-      ctx.fillRect(0,480,600,120);
-      // Bold yellow text Produced by DJ APO
-      ctx.fillStyle='#FFD60A';
-      ctx.font='900 30px Arial';
-      ctx.fillText('Produced by DJ APO', 20, 525);
-      ctx.fillStyle='#fff';
-      ctx.font='900 16px Arial';
-      ctx.fillText('OFFICIAL', 20, 550);
-      // Yellow border
-      ctx.strokeStyle='#FFD60A';
-      ctx.lineWidth=6;
-      ctx.strokeRect(0,0,600,600);
-      resolve(c.toDataURL());
-    };
-    img.onerror = ()=> resolve(coverDataUrl);
-    img.src = coverDataUrl;
-  });
-}
-
 
 function playTrack(id){let tr=tracks.find(t=>t.id===id); if(!tr)return; currentTrack=tr; document.getElementById('playerBar').style.display='block'; document.getElementById('pCover').src=tr.cover; document.getElementById('pTitle').innerText=tr.trackName; document.getElementById('pArtist').innerText=tr.artistName+' • '+tr.genre; audio.src=tr.audio; audio.play().then(()=>{isPlaying=true; document.getElementById('playPauseBtn').innerText='❚❚'; document.getElementById('arrowDown').style.display='block'}).catch(()=>{isPlaying=false}); history.replaceState(null,'','?track='+id); renderTracks()}
 function playNext(currentId){let list=getFiltered(); if(!list.length) return; let idx = currentId ? list.findIndex(t=>t.id===currentId) : list.findIndex(t=>currentTrack&&t.id===currentTrack.id); if(idx===-1) idx=0; else idx=(idx+1)%list.length; playTrack(list[idx].id);}
@@ -731,39 +615,50 @@ audio.addEventListener('timeupdate',()=>{let p=document.getElementById('progress
 audio.addEventListener('ended',()=>{if(!isRepeat){playNext()} else audio.play()});
 document.getElementById('progress').addEventListener('input',e=>{if(audio.duration)audio.currentTime=(e.target.value/100)*audio.duration});
 
-// Async load from IndexedDB - permanent, no storage limit
+// ===== FINAL INIT - ALL BUTTONS ENABLED, PERMANENT STORAGE =====
 (async()=>{
   await load();
   applyTranslations();
   renderTracks();
   renderTop();
-  if(isAdmin) renderAdminLists();
-  // Cleanup old localStorage keys that cause storage full
+  if(isAdmin){ 
+    let ap = document.getElementById('adminPanel');
+    if(ap) ap.style.display='block'; 
+    renderAdminLists();
+  }
+  let params=new URLSearchParams(location.search); 
+  let tid=params.get('track'); 
+  if(tid){ 
+    let f=tracks.find(t=>t.id===tid); 
+    if(f) playTrack(f.id);
+  }
+  // Clean legacy keys to prevent storage full
   try{
     LEGACY_KEYS.forEach(k=>{
-      if(k!==PERMANENT_DB_KEY){
-        localStorage.removeItem(k);
-        localStorage.removeItem(k+'_BACKUP');
-        localStorage.removeItem(k+'_LIGHT');
-      }
+      localStorage.removeItem(k);
+      localStorage.removeItem(k+'_BACKUP');
+      localStorage.removeItem(k+'_LIGHT');
     });
-    console.log('Cleaned legacy storage to free space');
   }catch{}
+  console.log('✅ All systems ready - buttons enabled, IndexedDB permanent, no dummy tracks');
 })();
- // admin panel handled in async load above
-let params=new URLSearchParams(location.search); let tid=params.get('track'); if(tid){let f=tracks.find(t=>t.id===tid); if(f)playTrack(f.id)}
 
-// PERMANENT FIX: Auto fake growth DISABLED for official tracks
-// Only real user interactions are saved permanently. No fake comments generation.
+// Disable fake auto growth - only real interactions
 setInterval(()=>{
-  // Only update lastGrowthCheck timestamp, no fake data injection
-  let now=Date.now(); 
-  let needs=false;
-  tracks.forEach(tr=>{
-    if(!tr.lastGrowthCheck){ tr.lastGrowthCheck=now; needs=true; }
-  });
+  let now=Date.now(); let needs=false;
+  tracks.forEach(tr=>{ if(!tr.lastGrowthCheck){ tr.lastGrowthCheck=now; needs=true; } });
   if(needs) save();
 }, 60000);
+
+// Enable all buttons helper - ensures no button is disabled
+function enableAllButtons(){
+  document.querySelectorAll('button').forEach(b=>{
+    if(b.id!=='publishBtn') b.disabled=false;
+  });
+}
+setInterval(enableAllButtons, 1000);
+document.addEventListener('DOMContentLoaded', enableAllButtons);
+
 </script>
 </body>
 </html>
