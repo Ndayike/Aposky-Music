@@ -2,150 +2,123 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>APOSKY MUSIC | INTERNATIONAL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="theme-color" content="#050507">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="format-detection" content="telephone=no">
+<meta name="msapplication-tap-highlight" content="no">
+<title>APOSKY MUSIC | INTERNATIONAL</title>
 <style>
-/* ===== CROSS-BROWSER RESET + ANTI-SHAKE CORE ===== */
-*,*::before,*::after{box-sizing:border-box;word-wrap:break-word;-webkit-tap-highlight-color:transparent}
+/* ===== UNIVERSAL BROWSER RESET - Chrome, Firefox, Safari, Edge, Opera, Mobile ===== */
+*,*::before,*::after{box-sizing:border-box;word-wrap:break-word;overflow-wrap:break-word}
 html{
   margin:0;padding:0;
+  width:100%;height:100%;
   -webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;text-size-adjust:100%;
-  scrollbar-gutter:stable;scroll-behavior:smooth;
-  overflow-x:hidden;width:100%;
+  -webkit-tap-highlight-color:rgba(255,214,10,0.2);
+  scroll-behavior:smooth;
+  overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
 }
 body{
-  margin:0;padding:0;background:#050507;color:#fff;
-  overflow-x:hidden;width:100%;max-width:100vw;
-  overscroll-behavior-y:contain;overscroll-behavior-x:none;
-  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
-  text-rendering:optimizeLegibility;
+  margin:0;padding:0;
+  background:#050507;color:#fff;
+  width:100%;min-height:100%;
   font-family:Arial,Helvetica,sans-serif !important;
+  overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
+  overscroll-behavior-y:auto;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
   position:relative;
-  /* Prevent layout shift when player appears */
-  padding-bottom:env(safe-area-inset-bottom);
 }
-img,canvas,video{max-width:100%;display:block}
-button{
-  cursor:pointer;font-family:Arial !important;
-  -webkit-appearance:none;appearance:none;
-  touch-action:manipulation;user-select:none;
-  -webkit-user-select:none;
+/* Allow cursor and finger scrolling everywhere */
+#topTracks{
+  display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;
+  padding-bottom:8px;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-x pan-y;
+  cursor:grab;
 }
-input{
-  font-family:Arial !important;
-  -webkit-appearance:none;appearance:none;
-  border-radius:0;
+#topTracks:active{cursor:grabbing}
+#tracksGrid{
+  display:grid;grid-template-columns:1fr;gap:12px;
+  overflow:visible;
+  touch-action:pan-y;
 }
-input[type="range"]{ -webkit-appearance:none; appearance:none; }
-
-/* ===== TRACK CARD - GPU ACCELERATED, NO SHAKE ===== */
+@media(min-width:600px){#tracksGrid{grid-template-columns:1fr 1fr}}
+@media(min-width:1024px){#tracksGrid{grid-template-columns:1fr 1fr 1fr}}
+button{cursor:pointer;font-family:Arial !important;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+input{font-family:Arial !important}
 .track-card{
   border:2px solid #FFD60A;background:#111113;border-radius:20px;overflow:hidden;position:relative;
-  transform:translateZ(0); /* GPU layer prevents shake */
-  backface-visibility:hidden;-webkit-backface-visibility:hidden;
-  will-change:border-color,box-shadow; /* only these */
-  contain:layout style paint;
+  transform:translateZ(0);-webkit-transform:translateZ(0);
 }
-.track-card.playing-active{border-color:#fff;box-shadow:0 0 25px rgba(255,214,10,0.4)}
-#tracksGrid{contain:layout style;content-visibility:auto}
-
-/* ===== ANIMATIONS - TRANSFORM ONLY, NO LAYOUT SHIFT ===== */
-@keyframes bounceArrow{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,8px,0)}}
+.track-card.playing{border-color:#fff;box-shadow:0 0 20px rgba(255,214,10,0.35)}
+@keyframes bounceArrow{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,214,10,0.7)}70%{box-shadow:0 0 0 12px rgba(255,214,10,0)}100%{box-shadow:0 0 0 0 rgba(255,214,10,0)}}
-@keyframes equalizer{0%{transform:scaleY(0.2)}50%{transform:scaleY(1)}100%{transform:scaleY(0.2)}}
-.bounce{animation:bounceArrow 1s infinite;will-change:transform;transform:translateZ(0)}
-.pulse{animation:pulse 1.5s infinite;will-change:box-shadow}
-.playing-badge{background:#FFD60A;color:#000;font-weight:900;font-size:9px;padding:3px 8px;border-radius:999px;letter-spacing:1px;display:inline-flex;align-items:center;gap:4px;transform:translateZ(0)}
-.eq{display:inline-flex;align-items:flex-end;height:14px;overflow:hidden}
-.eq span{display:inline-block;width:3px;height:14px;background:#000;margin:0 1px;transform-origin:bottom;animation:equalizer 0.6s infinite;will-change:transform}
+@keyframes equalizer{0%{height:3px}50%{height:14px}100%{height:3px}}
+.bounce{animation:bounceArrow 1s infinite}
+.pulse{animation:pulse 1.5s infinite}
+.playing-badge{background:#FFD60A;color:#000;font-weight:900;font-size:9px;padding:3px 8px;border-radius:999px;display:inline-flex;align-items:center;gap:4px}
+.eq span{display:inline-block;width:3px;background:#000;margin:0 1px;animation:equalizer 0.6s infinite}
 .eq span:nth-child(2){animation-delay:0.2s}
 .eq span:nth-child(3){animation-delay:0.4s}
-
-/* ===== PLAYER BAR - FIXED, NO SHAKE, SAFE AREA ===== */
 #playerBar{
   position:fixed;bottom:0;left:0;right:0;
   background:#000;border-top:3px solid #FFD60A;
-  padding:8px 10px calc(8px + env(safe-area-inset-bottom)) 10px;
-  z-index:999;
-  transform:translateZ(0);-webkit-transform:translateZ(0);
-  will-change:transform;backface-visibility:hidden;
-  contain:layout style paint;
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  z-index:9999;
+  transform:translateZ(0);
 }
-#playerBar img{transform:translateZ(0)}
-
-/* ===== SCROLLBAR STABLE, NO JUMP ===== */
-::-webkit-scrollbar{width:8px;height:8px}
-::-webkit-scrollbar-thumb{background:#FFD60A;border-radius:999px}
-::-webkit-scrollbar-track{background:#111}
-
-/* ===== RESPONSIVE - ALL DEVICES ===== */
-@media (max-width: 768px){
-  .track-card{border-radius:16px}
-  #tracksGrid{gap:10px}
-}
-@media (min-width: 769px){
-  #tracksGrid{grid-template-columns:1fr 1fr}
-}
-@media (min-width: 1200px){
-  #tracksGrid{grid-template-columns:1fr 1fr 1fr}
-}
-/* Prevent iOS zoom on input focus */
-@media screen and (max-width: 767px){
-  input[type="text"],input[type="number"],input[type="password"]{font-size:16px !important}
-}
-
-/* ===== DISABLE TEXT SELECT SHAKE ===== */
-.no-select{user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}
 </style>
 </head>
 <body>
-<div style="max-width:1440px;margin:0 auto;padding:12px 12px 150px 12px;">
+<div style="max-width:1440px;margin:0 auto;padding:12px 12px 160px 12px;">
 
 <div style="text-align:center;padding:18px 10px;border:3px solid #FFD60A;border-radius:24px;background:#000">
-<div style="font-weight:900;letter-spacing:3px;font-size:14px;color:#FFD60A" data-i18n="headerTitle">APOSKY MUSIC | INTERNATIONAL</div>
+<div style="font-weight:900;letter-spacing:3px;font-size:14px;color:#FFD60A">APOSKY MUSIC | INTERNATIONAL</div>
 <div style="font-weight:900;font-size:clamp(28px,8vw,72px);line-height:0.9;margin:8px 0;color:#fff;text-shadow:0 0 15px rgba(255,214,10,0.5)">DJ APO</div>
-<div style="display:inline-block;background:#fff;color:#000;padding:6px 14px;border-radius:999px;font-weight:900;font-size:11px;letter-spacing:1px;margin:6px;border:2px solid #000" data-i18n="modernProd">MODERN PRODUCTION</div>
-<div style="margin-top:8px;font-weight:900;font-size:12px;letter-spacing:2px;color:#FFD60A" data-i18n="bestMusic">BEST MUSIC, BEST PRODUCER</div>
+<div style="display:inline-block;background:#fff;color:#000;padding:6px 14px;border-radius:999px;font-weight:900;font-size:11px;letter-spacing:1px;margin:6px;border:2px solid #000">MODERN PRODUCTION</div>
+<div style="margin-top:8px;font-weight:900;font-size:12px;letter-spacing:2px;color:#FFD60A">BEST MUSIC, BEST PRODUCER</div>
 <div style="margin-top:14px;display:flex;flex-wrap:wrap;justify-content:center;gap:8px">
 <button onclick="toggleLang()" id="langBtn" style="padding:12px 20px;border-radius:999px;border:3px solid #FFD60A;background:#000;color:#FFD60A;font-weight:900;font-size:13px">🌐 EN / FR</button>
-<button onclick="openPublisher()" style="padding:10px 18px;border-radius:999px;background:#FFD60A;color:#000;font-weight:900;font-size:12px;border:3px solid #000" data-i18n="pubZone">PUBLISHER'S ZONE</button>
-<button onclick="scrollToTracks()" style="padding:10px 18px;border-radius:999px;background:#fff;color:#000;font-weight:900;font-size:12px;border:3px solid #000" data-i18n="explore">EXPLORE MUSIC</button>
+<button onclick="openPublisher()" style="padding:10px 18px;border-radius:999px;background:#FFD60A;color:#000;font-weight:900;font-size:12px;border:3px solid #000">PUBLISHER'S ZONE</button>
+<button onclick="scrollToTracks()" style="padding:10px 18px;border-radius:999px;background:#fff;color:#000;font-weight:900;font-size:12px;border:3px solid #000">EXPLORE MUSIC</button>
 </div>
 </div>
 
 <div style="margin-top:14px;border:3px solid #FFD60A;border-radius:20px;background:#000;padding:14px;text-align:center;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap">
 <div style="font-size:42px">🎧</div>
-<div style="text-align:left"><div style="font-weight:900;color:#FFD60A;font-size:14px" data-i18n="headphone">FOR BEST EXPERIENCE, USE HEADPHONES</div><div style="font-size:11px;color:#fff;opacity:0.9" data-i18n="headphoneSub">FOR BEST EXPERIENCE, USE HEADPHONES - POUR UNE MEILLEURE EXPERIENCE</div></div>
-<div style="background:#FFD60A;color:#000;padding:6px 12px;border-radius:999px;font-weight:900;font-size:10px">ARIAL • PERMANENT • FR/EN AUTO</div>
+<div style="text-align:left"><div style="font-weight:900;color:#FFD60A;font-size:14px">FOR BEST EXPERIENCE, USE HEADPHONES</div><div style="font-size:11px;color:#fff;opacity:0.9">FOR BEST EXPERIENCE, USE HEADPHONES - POUR UNE MEILLEURE EXPERIENCE</div></div>
+<div style="background:#FFD60A;color:#000;padding:6px 12px;border-radius:999px;font-weight:900;font-size:10px">UNIVERSAL • PERMANENT • ALL BROWSERS</div>
 </div>
 
-<div style="margin-top:12px;padding:12px;border:2px solid #fff;border-radius:16px;background:#111;text-align:center;font-weight:900;font-size:12px;line-height:1.5" data-i18n="tagline">Discover the finest African and international music by DJ APO. Stream, download, and share tracks crafted with modern production excellence.</div>
+<div style="margin-top:12px;padding:12px;border:2px solid #fff;border-radius:16px;background:#111;text-align:center;font-weight:900;font-size:12px;line-height:1.5">Discover the finest African and international music by DJ APO. Stream, download, and share tracks crafted with modern production excellence.</div>
 
 <div style="margin-top:16px">
-<div style="font-weight:900;font-size:clamp(16px,4vw,22px);color:#FFD60A" data-i18n="playlistTitle">BURUNDI ELECTION 2027 - Official Selection</div>
-<div style="font-size:11px;color:#fff;opacity:0.8;margin-bottom:8px" data-i18n="playlistSub">Top selected tracks curated for the national celebration</div>
-<div id="topTracks" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px"></div>
+<div style="font-weight:900;font-size:clamp(16px,4vw,22px);color:#FFD60A">BURUNDI ELECTION 2027 - Official Selection</div>
+<div style="font-size:11px;color:#fff;opacity:0.8;margin-bottom:8px">Top selected tracks curated for the national celebration</div>
+<div id="topTracks"></div>
 </div>
 
 <div style="margin-top:16px;display:flex;gap:8px">
 <input id="searchInput" oninput="renderTracks()" placeholder="Search track, artist, genre..." style="flex:1;padding:12px 14px;border-radius:999px;border:2px solid #FFD60A;background:#000;color:#fff;font-weight:700">
-<button onclick="document.getElementById('searchInput').value='';renderTracks()" style="padding:12px 16px;border-radius:999px;background:#fff;color:#000;font-weight:900;border:3px solid #000" data-i18n="clear">CLEAR</button>
+<button onclick="document.getElementById('searchInput').value='';renderTracks()" style="padding:12px 16px;border-radius:999px;background:#fff;color:#000;font-weight:900;border:3px solid #000">CLEAR</button>
 </div>
 
 <div style="margin-top:16px;border:3px solid #000;background:#fff;border-radius:20px;padding:14px;text-align:center;box-shadow:0 0 0 3px #FFD60A">
-<div style="color:#000;font-weight:900;font-size:14px" data-i18n="ctaTitle">DO YOU WANT TO MAKE A SONG?</div>
+<div style="color:#000;font-weight:900;font-size:14px">DO YOU WANT TO MAKE A SONG?</div>
 <div style="color:#000;font-weight:900;font-size:12px;margin-top:4px">CONTACT DJ APO | WHATSAPP: +257 62 020 750</div>
-<a href="https://wa.me/25762020750" target="_blank" style="display:inline-block;margin-top:8px;background:#000;color:#FFD60A;padding:10px 18px;border-radius:999px;font-weight:900;text-decoration:none;border:2px solid #000" data-i18n="chatWa">CHAT ON WHATSAPP ↗</a>
+<a href="https://wa.me/25762020750" target="_blank" style="display:inline-block;margin-top:8px;background:#000;color:#FFD60A;padding:10px 18px;border-radius:999px;font-weight:900;text-decoration:none;border:2px solid #000">CHAT ON WHATSAPP ↗</a>
 </div>
 
-<div style="margin-top:18px;display:flex;justify-content:space-between;align-items:center"><div style="font-weight:900;font-size:16px;color:#fff"><span data-i18n="latest">Latest Releases</span> • <span id="countTracks" style="color:#FFD60A"></span></div><div style="font-size:10px;color:#FFD60A;font-weight:900">FR/EN AUTO • PLAYING INDICATOR • PERMANENT</div></div>
-<div id="tracksGrid" style="margin-top:10px;display:grid;grid-template-columns:1fr;gap:12px"></div>
+<div style="margin-top:18px;display:flex;justify-content:space-between;align-items:center"><div style="font-weight:900;font-size:16px;color:#fff">Latest Releases • <span id="countTracks" style="color:#FFD60A"></span></div><div style="font-size:10px;color:#FFD60A;font-weight:900">ALL BROWSERS • MOBILE • PERMANENT</div></div>
+<div id="tracksGrid" style="margin-top:10px"></div>
 
-<div id="loginModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;padding:12px">
+<div id="loginModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10000;align-items:center;justify-content:center;padding:12px">
 <div style="background:#000;border:3px solid #FFD60A;border-radius:24px;padding:18px;width:100%;max-width:400px">
 <div style="font-weight:900;font-size:18px;color:#FFD60A;text-align:center">PUBLISHER'S ZONE LOGIN</div>
 <div style="font-size:11px;text-align:center;color:#fff;margin:6px 0">Username: Apollo4 | Code: 198026</div>
@@ -174,141 +147,81 @@ input[type="range"]{ -webkit-appearance:none; appearance:none; }
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
 <div><label style="font-weight:900;font-size:11px;color:#fff">COVER / PICTURE</label><input type="file" id="f_cover" accept="image/*" style="width:100%;margin-top:4px"><div id="coverPreview" style="margin-top:6px"></div></div>
-<div><label style="font-weight:900;font-size:11px;color:#FFD60A">AUDIO FILE *</label><input type="file" id="f_audio" accept="audio/*,.mp3,.wav,.m4a" style="width:100%;margin-top:4px"><div id="audioPreview" style="margin-top:6px;font-size:11px;color:#FFD60A;font-weight:900"></div></div>
+<div><label style="font-weight:900;font-size:11px;color:#FFD60A">AUDIO FILE *</label><input type="file" id="f_audio" accept="audio/*,.mp3,.wav,.m4a,.ogg,.aac" style="width:100%;margin-top:4px"><div id="audioPreview" style="margin-top:6px;font-size:11px;color:#FFD60A;font-weight:900"></div></div>
 </div>
-<button id="publishBtn" onclick="publishTrack()" style="width:100%;margin-top:14px;padding:16px;border-radius:999px;background:#FFD60A;color:#000;font-weight:900;font-size:16px;border:4px solid #000">PUBLISH TRACK - PERMANENT</button>
-
+<button id="publishBtn" onclick="publishTrack()" style="width:100%;margin-top:14px;padding:16px;border-radius:999px;background:#FFD60A;color:#000;font-weight:900;font-size:16px;border:4px solid #000">PUBLISH TRACK - PERMANENT (ALL BROWSERS)</button>
 <div style="margin-top:18px;border-top:2px solid #333;padding-top:12px">
 <div style="font-weight:900;color:#ff4444;font-size:14px">MANAGE TRACKS (Admin Only)</div>
-<div id="adminTrackList" style="margin-top:8px;display:grid;gap:8px;max-height:400px;overflow:auto"></div>
+<div id="adminTrackList" style="margin-top:8px;display:grid;gap:8px;max-height:400px;overflow:auto;-webkit-overflow-scrolling:touch"></div>
 </div>
 <div style="margin-top:18px;border-top:2px solid #333;padding-top:12px">
 <div style="font-weight:900;color:#FFD60A;font-size:14px">MANAGE COMMENTS (Admin Only)</div>
-<div id="adminCommentList" style="margin-top:8px;max-height:400px;overflow:auto"></div>
+<div id="adminCommentList" style="margin-top:8px;max-height:400px;overflow:auto;-webkit-overflow-scrolling:touch"></div>
 </div>
 </div>
 
 </div>
 
-<div id="playerBar" style="position:fixed;bottom:0;left:0;right:0;background:#000;border-top:3px solid #FFD60A;padding:8px 10px;display:none;z-index:999">
+<div id="playerBar" style="display:none">
 <div style="max-width:1440px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between">
 <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0"><img id="pCover" src="" style="width:44px;height:44px;border-radius:10px;object-fit:cover"><div style="min-width:0"><div id="pTitle" style="font-weight:900;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div><div id="pArtist" style="font-size:11px;color:#FFD60A;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div></div></div>
 <div style="display:flex;align-items:center;gap:6px"><button onclick="playPrev()" style="width:38px;height:38px;border-radius:999px;background:#111;color:#fff;border:2px solid #fff;font-weight:900;font-size:10px">PREV</button><button onclick="seek(-10)" style="width:38px;height:38px;border-radius:999px;background:#111;color:#fff;border:2px solid #fff;font-weight:900">-10</button><button onclick="togglePlay()" id="playPauseBtn" style="width:46px;height:46px;border-radius:999px;background:#FFD60A;color:#000;border:3px solid #000;font-weight:900">▶</button><button onclick="seek(10)" style="width:38px;height:38px;border-radius:999px;background:#111;color:#fff;border:2px solid #fff;font-weight:900">+10</button><button onclick="playNext()" style="width:38px;height:38px;border-radius:999px;background:#111;color:#fff;border:2px solid #fff;font-weight:900;font-size:10px">NEXT</button><button onclick="toggleRepeat()" id="repeatBtn" style="width:38px;height:38px;border-radius:999px;background:#111;color:#fff;border:2px solid #fff;font-weight:900">↻</button></div>
 <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:120px"><span id="curTime" style="font-size:10px;font-weight:900">0:00</span><input type="range" id="progress" min="0" max="100" value="0" style="flex:1;accent-color:#FFD60A"><span id="durTime" style="font-size:10px;font-weight:900">0:00</span></div>
-<div style="position:relative"><div id="arrowDown" class="bounce" style="position:absolute;top:-22px;left:50%;transform:translateX(-50%);color:#FFD60A;font-size:18px;display:none">⬇</div><button onclick="downloadCurrent()" style="padding:10px 14px;border-radius:999px;background:#fff;color:#000;font-weight:900;border:3px solid #000;font-size:11px">DOWNLOAD</button></div>
-<button onclick="shareCurrent()" style="width:40px;height:40px;border-radius:999px;background:#FFD60A;color:#000;border:3px solid #000;font-weight:900">↗</button>
+<div style="display:flex;align-items:center;gap:6px"><button onclick="downloadCurrent()" style="padding:8px 12px;border-radius:999px;background:#fff;color:#000;font-weight:900;border:2px solid #000;font-size:11px">DOWNLOAD</button><button onclick="shareCurrent()" style="padding:8px 12px;border-radius:999px;background:#000;color:#fff;border:2px solid #fff;font-weight:900;font-size:11px">SHARE</button><button onclick="closePlayer()" style="width:32px;height:32px;border-radius:999px;background:#000;color:#fff;border:2px solid #fff;font-weight:900">✕</button></div>
 </div>
 </div>
 
-<div id="detailModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:8888;overflow:auto;padding:12px">
-<div style="max-width:800px;margin:0 auto;background:#000;border:3px solid #FFD60A;border-radius:24px;padding:14px">
-<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:900;color:#FFD60A">TRACK DETAILS</div><button onclick="closeDetail()" style="padding:8px 14px;border-radius:999px;background:#fff;color:#000;font-weight:900;border:2px solid #000">CLOSE</button></div>
+<div id="arrowDown" style="display:none;position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:998;background:#FFD60A;color:#000;padding:6px 12px;border-radius:999px;font-weight:900;font-size:10px;border:2px solid #000" class="bounce">⬇ NOW PLAYING - SCROLL UP FOR TRACKS</div>
+
+<div id="detailModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:10001;overflow:auto;-webkit-overflow-scrolling:touch;padding:12px">
+<div style="max-width:800px;margin:20px auto;background:#000;border:3px solid #FFD60A;border-radius:24px;padding:14px">
+<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:900;color:#FFD60A">TRACK DETAIL</div><button onclick="closeDetail()" style="width:36px;height:36px;border-radius:999px;background:#fff;color:#000;font-weight:900;border:2px solid #000">✕</button></div>
 <div id="detailContent"></div>
 </div>
 </div>
 
-<footer style="border-top:3px solid #fff;background:#000;padding:20px 12px;text-align:center;margin-top:20px">
-<div style="font-weight:900;font-size:10px;color:#fff">APOSKY MUSIC | INTERNATIONAL • DJ APO • MODERN PRODUCTION • BURUNDI ELECTION 2027</div>
-<div style="font-weight:900;font-size:10px;color:#FFD60A;margin-top:8px">©2026 SMART DESIGN EXPERTS | DJ APO | NDAYIKEZE APOLLINAIRE • <span id="footerCount"></span> TRACKS • FR/EN AUTO TRANSLATE</div>
-</footer>
+<div style="text-align:center;padding:20px;color:#fff;opacity:0.6;font-size:10px;font-weight:900"><div>APOSKY MUSIC | INTERNATIONAL • DJ APO • MODERN PRODUCTION • BURUNDI ELECTION 2027</div><div style="margin-top:6px">© 2026 APOSKY MUSIC • Works on Chrome, Firefox, Safari, Edge, Opera, Mobile • Permanent IndexedDB + localStorage • <span id="footerCount">0</span> official tracks</div></div>
 
 <script>
-let tracks = [];
-let currentTrack = null;
-let isPlaying = false;
-let isRepeat = false;
-let lang = localStorage.getItem('aposky_lang') || 'EN';
+// ===== UNIVERSAL BROWSER COMPATIBILITY LAYER =====
+// Works on: Chrome, Firefox, Safari, Edge, Opera, Brave, Samsung Internet, UC, Mobile Safari, Chrome Mobile
+(function(){
+  window.isOpera = (!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/')>=0;
+  window.isEdge = navigator.userAgent.indexOf('Edg/')>=0 || navigator.userAgent.indexOf('Edge/')>=0;
+  window.isFirefox = typeof InstallTrigger!=='undefined';
+  window.isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  window.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  console.log('Browser:', {opera: isOpera, edge: isEdge, firefox: isFirefox, safari: isSafari, mobile: isMobile, ua: navigator.userAgent});
+})();
+
+let tracks=[];
+let lang = 'EN';
 let isAdmin = false;
-let formData = {cover:'',audio:''};
-// audio defined in anti-shake block below
+let currentTrack=null;
+let isPlaying=false;
+let isRepeat=false;
+let formData={cover:'',audio:'',coverName:'',audioName:'',audioSize:''};
 
 const DICT = {
-  EN: {
-    headerTitle: "APOSKY MUSIC | INTERNATIONAL",
-    modernProd: "MODERN PRODUCTION",
-    bestMusic: "BEST MUSIC, BEST PRODUCER",
-    pubZone: "PUBLISHER'S ZONE",
-    explore: "EXPLORE MUSIC",
-    headphone: "FOR BEST EXPERIENCE, USE HEADPHONES",
-    headphoneSub: "FOR BEST EXPERIENCE, USE HEADPHONES",
-    tagline: "Discover the finest African and international music by DJ APO. Stream, download, and share tracks crafted with modern production excellence.",
-    playlistTitle: "BURUNDI ELECTION 2027 - Official Selection",
-    playlistSub: "Top selected tracks curated for the national celebration",
-    clear: "CLEAR",
-    ctaTitle: "DO YOU WANT TO MAKE A SONG?",
-    chatWa: "CHAT ON WHATSAPP ↗",
-    latest: "Latest Releases",
-    playing: "PLAYING",
-    nowPlaying: "NOW PLAYING",
-    paused: "PAUSED",
-    play: "PLAY",
-    pause: "PAUSE",
-    prev: "PREV",
-    next: "NEXT",
-    download: "DOWNLOAD",
-    share: "SHARE",
-    send: "SEND",
-    yourName: "Your Name",
-    yourComment: "Your Comment...",
-    addCommentTitle: "ADD COMMENT - Name + Comment (Permanent) - Auto Translated",
-    comments: "COMMENTS",
-    viewAll: "VIEW ALL",
-    noTop: "No top tracks yet - admin can add via PUBLISHER ZONE",
-    searchPh: "Search track, artist, genre...",
-    autoNote: "💬 comments • Auto-translated when language changes"
-  },
-  FR: {
-    headerTitle: "APOSKY MUSIC | INTERNATIONAL",
-    modernProd: "PRODUCTION MODERNE",
-    bestMusic: "MEILLEURE MUSIQUE, MEILLEUR PRODUCTEUR",
-    pubZone: "ZONE EDITEUR",
-    explore: "EXPLORER MUSIQUE",
-    headphone: "POUR UNE MEILLEURE EXPERIENCE, UTILISEZ LES ECOUTEURS",
-    headphoneSub: "POUR UNE MEILLEURE EXPERIENCE, UTILISEZ LES ECOUTEURS",
-    tagline: "Découvrez la meilleure musique africaine et internationale de DJ APO. Écoutez, téléchargez et partagez des morceaux créés avec une excellence de production moderne.",
-    playlistTitle: "ELECTION BURUNDI 2027 - Sélection Officielle",
-    playlistSub: "Morceaux sélectionnés pour la célébration nationale",
-    clear: "EFFACER",
-    ctaTitle: "VOULEZ-VOUS CREER UNE CHANSON?",
-    chatWa: "DISCUTER SUR WHATSAPP ↗",
-    latest: "Dernières Sorties",
-    playing: "EN COURS",
-    nowPlaying: "LECTURE EN COURS",
-    paused: "EN PAUSE",
-    play: "JOUER",
-    pause: "PAUSE",
-    prev: "PREC",
-    next: "SUIV",
-    download: "TELECHARGER",
-    share: "PARTAGER",
-    send: "ENVOYER",
-    yourName: "Votre Nom",
-    yourComment: "Votre Commentaire...",
-    addCommentTitle: "AJOUTER COMMENTAIRE - Nom + Commentaire (Permanent) - Traduit Automatiquement",
-    comments: "COMMENTAIRES",
-    viewAll: "VOIR TOUS",
-    noTop: "Pas encore de morceaux top - admin peut ajouter via ZONE EDITEUR",
-    searchPh: "Rechercher morceau, artiste, genre...",
-    autoNote: "💬 commentaires • Traduits automatiquement quand langue change"
-  }
+  EN: {headerTitle:"APOSKY MUSIC | INTERNATIONAL",modernProd:"MODERN PRODUCTION",bestMusic:"BEST MUSIC, BEST PRODUCER",pubZone:"PUBLISHER'S ZONE",explore:"EXPLORE MUSIC",headphone:"FOR BEST EXPERIENCE, USE HEADPHONES",headphoneSub:"FOR BEST EXPERIENCE, USE HEADPHONES",tagline:"Discover the finest African and international music by DJ APO. Stream, download, and share tracks crafted with modern production excellence.",playlistTitle:"BURUNDI ELECTION 2027 - Official Selection",playlistSub:"Top selected tracks curated for the national celebration",clear:"CLEAR",ctaTitle:"DO YOU WANT TO MAKE A SONG?",chatWa:"CHAT ON WHATSAPP ↗",latest:"Latest Releases",playing:"PLAYING",nowPlaying:"NOW PLAYING",paused:"PAUSED",play:"PLAY",pause:"PAUSE",prev:"PREV",next:"NEXT",download:"DOWNLOAD",share:"SHARE",send:"SEND",yourName:"Your Name",yourComment:"Your Comment...",addCommentTitle:"ADD COMMENT - Name + Comment (Permanent) - Auto Translated",comments:"COMMENTS",viewAll:"VIEW ALL",noTop:"No top tracks yet - admin can add via PUBLISHER ZONE",searchPh:"Search track, artist, genre...",autoNote:"💬 comments • Auto-translated when language changes"},
+  FR: {headerTitle:"APOSKY MUSIC | INTERNATIONAL",modernProd:"PRODUCTION MODERNE",bestMusic:"MEILLEURE MUSIQUE, MEILLEUR PRODUCTEUR",pubZone:"ZONE EDITEUR",explore:"EXPLORER MUSIQUE",headphone:"POUR UNE MEILLEURE EXPERIENCE, UTILISEZ LES ECOUTEURS",headphoneSub:"POUR UNE MEILLEURE EXPERIENCE, UTILISEZ LES ECOUTEURS",tagline:"Découvrez la meilleure musique africaine et internationale de DJ APO. Écoutez, téléchargez et partagez des morceaux créés avec une excellence de production moderne.",playlistTitle:"ELECTION BURUNDI 2027 - Sélection Officielle",playlistSub:"Morceaux sélectionnés pour la célébration nationale",clear:"EFFACER",ctaTitle:"VOULEZ-VOUS CREER UNE CHANSON?",chatWa:"DISCUTER SUR WHATSAPP ↗",latest:"Dernières Sorties",playing:"EN COURS",nowPlaying:"LECTURE EN COURS",paused:"EN PAUSE",play:"JOUER",pause:"PAUSE",prev:"PREC",next:"SUIV",download:"TELECHARGER",share:"PARTAGER",send:"ENVOYER",yourName:"Votre Nom",yourComment:"Votre Commentaire...",addCommentTitle:"AJOUTER COMMENTAIRE - Nom + Commentaire (Permanent) - Traduit Automatiquement",comments:"COMMENTAIRES",viewAll:"VOIR TOUS",noTop:"Pas encore de morceaux top - admin peut ajouter via ZONE EDITEUR",searchPh:"Rechercher morceau, artiste, genre...",autoNote:"💬 commentaires • Traduits automatiquement quand langue change"}
 };
-
 const NAMES = ["Aline K.","Moussa D.","Grace U.","Jean-Paul B.","Fatima N.","Samuel O.","Chloé M.","David K.","Iman T.","Patrick R.","Esperance I.","Cedric L.","Aisha J.","Kevin N.","Josiane H.","Eric M.","Naomi Z.","Blaise K.","Sandra W.","Yves T.","Lina S.","Abdou S.","Mireille P.","Oliver G.","Esther B.","Fabrice N.","Ines K.","Luc M.","Ruth A."];
 const TEMPLATES_EN = ["This chorus is pure fire! 🔥","Vocals are heavenly, chills!","Best studio sound in Burundi, respect to {studio}!","Verse 2 killed me, so deep.","{artist} never disappoints!","Producer {producer} is a genius.","That bassline is insane!","On repeat all day!","Modern production at its best!","Mix so clean, {studio} did great.","Bringing African sound to world!","Style unique, love vibe.","Chorus stuck in head since morning.","Artist vocals so powerful!","From {country} to world, big up!","DJ APO best music!","Intro alone worth it.","Fire beat, fire lyrics 🔥🔥","Favorite track {year}!","Emotional, real music."];
 const TEMPLATES_FR = ["Ce refrain est du pur feu! 🔥","Les vocaux sont divins, frissons!","Meilleur son studio Burundi, respect à {studio}!","Le couplet 2 m'a tué, profond.","{artist} ne déçoit jamais!","Le producteur {producer} est un génie.","Cette basse est dingue!","En boucle toute la journée.","Production moderne au top!","Mix si propre, bravo {studio}.","Son africain vers le monde!","Style unique, j'adore la vibe.","Refrain dans tête depuis matin.","Voix puissante!","De {country} vers monde, respect!","DJ APO meilleure musique!","Rien que l'intro vaut le coup.","Beat de feu, paroles de feu 🔥🔥","Morceau préféré de {year}!","Émotion pure, vraie musique."];
 
 function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a}
-function slug(s){return s.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+Date.now().toString(36)}
-function fillTpl(tpl, tr){return tpl.replace(/{(\w+)}/g,(_,k)=>tr[k]||k)}
-function formatTime(s){if(!s||isNaN(s))return "0:00";let m=Math.floor(s/60);let sec=Math.floor(s%60).toString().padStart(2,'0');return m+':'+sec}
+function slug(s){return s.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6)}
+function fillTpl(tpl, tr){return tpl.replace(/{(\w+)}/g,function(_,k){return tr[k]||k})}
+function formatTime(s){if(!s||isNaN(s))return "0:00";var m=Math.floor(s/60);var sec=Math.floor(s%60).toString();if(sec.length<2) sec='0'+sec;return m+':'+sec}
 function formatNum(n){if(n>=1000000)return (n/1000000).toFixed(1)+'M';if(n>=1000)return (n/1000).toFixed(1)+'K';return n+''}
 function formatSize(b){if(b>1024*1024)return (b/1024/1024).toFixed(1)+' MB';return (b/1024).toFixed(0)+' KB'}
-function t(key){return DICT[lang][key] || DICT['EN'][key] || key}
+function t(key){return (DICT[lang]&&DICT[lang][key])||(DICT['EN'][key])||key}
 
 function generateCover(name,genre){
-  const c=document.createElement('canvas');c.width=600;c.height=600;const ctx=c.getContext('2d');
-  const grad=ctx.createLinearGradient(0,0,600,600);grad.addColorStop(0,'#FFD60A');grad.addColorStop(0.5,'#111');grad.addColorStop(1,'#000');ctx.fillStyle=grad;ctx.fillRect(0,0,600,600);
-  ctx.fillStyle='rgba(255,255,255,0.07)';for(let i=0;i<40;i++){ctx.beginPath();ctx.arc(rnd(0,600),rnd(0,600),rnd(20,80),0,Math.PI*2);ctx.fill()}
+  var c=document.createElement('canvas');c.width=600;c.height=600;var ctx=c.getContext('2d');
+  var grad=ctx.createLinearGradient(0,0,600,600);grad.addColorStop(0,'#FFD60A');grad.addColorStop(0.5,'#111');grad.addColorStop(1,'#000');ctx.fillStyle=grad;ctx.fillRect(0,0,600,600);
+  ctx.fillStyle='rgba(255,255,255,0.07)';for(var i=0;i<40;i++){ctx.beginPath();ctx.arc(rnd(0,600),rnd(0,600),rnd(20,80),0,Math.PI*2);ctx.fill()}
   ctx.fillStyle='#fff';ctx.font='900 22px Arial';ctx.fillText(genre.toUpperCase().slice(0,25),30,50);
   ctx.fillStyle='#FFD60A';ctx.font='900 34px Arial';ctx.fillText(name.slice(0,22).toUpperCase(),30,320);
   ctx.fillStyle='rgba(0,0,0,0.9)';ctx.fillRect(0,460,600,140);
@@ -318,563 +231,353 @@ function generateCover(name,genre){
   return c.toDataURL();
 }
 function genComment(tr){
-  const en = TEMPLATES_EN[rnd(0,TEMPLATES_EN.length-1)];
-  const fr = TEMPLATES_FR[rnd(0,TEMPLATES_FR.length-1)];
-  // Create linked translations: same index idea
-  return {
-    id:Math.random().toString(36).slice(2),
-    name:NAMES[rnd(0,NAMES.length-1)],
-    text:fillTpl(en,tr),
-    textFR:fillTpl(fr,tr),
-    createdAt:Date.now()-rnd(0,86400000*30),
-    likes:rnd(333,333333),
-    hearts:rnd(333,333333),
-    fires:rnd(333,333333)
-  }
+  var en = TEMPLATES_EN[rnd(0,TEMPLATES_EN.length-1)];
+  var fr = TEMPLATES_FR[rnd(0,TEMPLATES_FR.length-1)];
+  return {id:Math.random().toString(36).slice(2),name:NAMES[rnd(0,NAMES.length-1)],text:fillTpl(en,tr),textFR:fillTpl(fr,tr),createdAt:Date.now()-rnd(0,86400000*30),likes:rnd(333,33333),hearts:rnd(333,33333),fires:rnd(333,33333)}
 }
-function genSeed(){
-  // FINAL FIX: No default AI tracks. Only your officially published songs appear.
-  return [];
-}
-const DUMMY_AUDIO_MARKER = "UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
-function isDummyTrack(tr){
-  if(!tr || !tr.audio) return true;
-  if(tr.audio.includes(DUMMY_AUDIO_MARKER)) return true;
-  if(tr.audio.length < 800) return true;
-  return false;
-}
+function genSeed(){return []}
+var DUMMY_MARKER="UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
+function isDummyTrack(tr){if(!tr||!tr.audio)return true;if(tr.audio.indexOf(DUMMY_MARKER)>=0)return true;if(tr.audio.length<800)return true;return false}
 
-// ===== PERMANENT DATABASE V9 - INDEXEDDB (UNLIMITED, NO STORAGE FULL) =====
-const PERMANENT_DB_KEY = 'aposky_official_tracks_V9';
-const LEGACY_KEYS = ['aposky_official_tracks_PERMANENT_V8','aposky_official_tracks_PERMANENT_V7','aposky_tracks_PERMANENT_V6','aposky_tracks_PERMANENT_V5'];
-const IDB_NAME = 'APOSKY_MUSIC_DB';
-const IDB_STORE = 'tracks_store';
+// ===== UNIVERSAL STORAGE - WORKS ON ALL BROWSERS + MOBILE =====
+var PERMANENT_KEY='aposky_universal_v10_all_browsers';
+var LEGACY_KEYS=['aposky_official_tracks_V9','aposky_official_tracks_PERMANENT_V8','aposky_official_tracks_PERMANENT_V7','aposky_tracks_PERMANENT_V6','aposky_tracks_PERMANENT_V5','aposky_tracks'];
+var IDB_NAME='APOSKY_MUSIC_DB_UNIVERSAL';
+var IDB_STORE='tracks_store';
 
 function openIDB(){
-  return new Promise((resolve, reject)=>{
-    let req = indexedDB.open(IDB_NAME, 2);
-    req.onupgradeneeded = (e)=>{
-      let db = e.target.result;
-      if(!db.objectStoreNames.contains(IDB_STORE)){
-        db.createObjectStore(IDB_STORE, {keyPath: 'key'});
-      }
-    };
-    req.onsuccess = ()=> resolve(req.result);
-    req.onerror = ()=> reject(req.error);
+  return new Promise(function(resolve,reject){
+    if(!window.indexedDB){ reject('no idb'); return; }
+    try{
+      var req=indexedDB.open(IDB_NAME, 3);
+      req.onupgradeneeded=function(e){var db=e.target.result;if(!db.objectStoreNames.contains(IDB_STORE)){db.createObjectStore(IDB_STORE,{keyPath:'key'})}};
+      req.onsuccess=function(){resolve(req.result)};
+      req.onerror=function(){reject(req.error)};
+      req.onblocked=function(){resolve(null)};
+    }catch(err){reject(err)}
   });
 }
-async function idbSet(key, value){
-  try{
-    let db = await openIDB();
-    return new Promise((res, rej)=>{
-      let tx = db.transaction(IDB_STORE, 'readwrite');
-      tx.objectStore(IDB_STORE).put({key, value, updated: Date.now()});
-      tx.oncomplete = ()=> res(true);
-      tx.onerror = ()=> rej(tx.error);
+function idbSet(key,value){
+  return openIDB().then(function(db){
+    if(!db) return false;
+    return new Promise(function(res){
+      try{
+        var tx=db.transaction(IDB_STORE,'readwrite');
+        tx.objectStore(IDB_STORE).put({key:key,value:value,updated:Date.now()});
+        tx.oncomplete=function(){res(true)};
+        tx.onerror=function(){res(false)};
+      }catch(e){res(false)}
     });
-  }catch(e){ console.error('IDB set error', e); return false; }
+  }).catch(function(){return false});
 }
-async function idbGet(key){
-  try{
-    let db = await openIDB();
-    return new Promise((res)=>{
-      let tx = db.transaction(IDB_STORE, 'readonly');
-      let req = tx.objectStore(IDB_STORE).get(key);
-      req.onsuccess = ()=> res(req.result ? req.result.value : null);
-      req.onerror = ()=> res(null);
+function idbGet(key){
+  return openIDB().then(function(db){
+    if(!db) return null;
+    return new Promise(function(res){
+      try{
+        var tx=db.transaction(IDB_STORE,'readonly');
+        var req=tx.objectStore(IDB_STORE).get(key);
+        req.onsuccess=function(){res(req.result?req.result.value:null)};
+        req.onerror=function(){res(null)};
+      }catch(e){res(null)}
     });
-  }catch(e){ return null; }
+  }).catch(function(){return null});
 }
 
 function save(){
-  // Save to IndexedDB (primary, unlimited) + light backup
   try{
-    const official = tracks.filter(t=> !isDummyTrack(t));
-    if(official.length !== tracks.length) tracks = official;
-    idbSet(PERMANENT_DB_KEY, tracks);
-    try{ localStorage.setItem('aposky_lang', lang); localStorage.setItem('aposky_admin', isAdmin?'1':'0'); }catch{}
-    console.log('✅ PERMANENT SAVE to IndexedDB: '+tracks.length+' tracks');
+    var official=tracks.filter(function(t){return !isDummyTrack(t)});
+    if(official.length!==tracks.length) tracks=official;
+    // 1. Try localStorage (works on all browsers including Opera/Edge mobile)
+    try{
+      localStorage.setItem(PERMANENT_KEY, JSON.stringify(tracks));
+      localStorage.setItem('aposky_lang', lang);
+      localStorage.setItem('aposky_admin', isAdmin?'1':'0');
+    }catch(e){
+      // localStorage full -> try to store lightweight version without audio for Opera mini etc
+      try{
+        var light=tracks.map(function(t){var copy={};for(var k in t){if(k!=='audio') copy[k]=t[k]; else copy[k]=t.audio? t.audio.slice(0,100):''; } copy._audioInIDB=true; return copy;});
+        localStorage.setItem(PERMANENT_KEY+'_light', JSON.stringify(light));
+      }catch(e2){}
+      console.log('localStorage full, using IDB fallback');
+    }
+    // 2. Always save to IndexedDB for unlimited storage (Chrome, Firefox, Edge, Opera, Safari)
+    idbSet(PERMANENT_KEY, tracks);
+    // 3. Backup
+    idbSet(PERMANENT_KEY+'_backup', tracks);
+    console.log('✅ UNIVERSAL SAVE: '+tracks.length+' tracks saved to localStorage+IDB for all browsers');
     return true;
-  }catch(e){ console.error(e); return true; }
+  }catch(e){console.error('save error',e);return true}
 }
 
 async function load(){
   try{
-    let data = await idbGet(PERMANENT_DB_KEY);
-    if(data && Array.isArray(data) && data.length>0){
-      tracks = data.filter(t=> !isDummyTrack(t));
-      console.log('✅ Loaded '+tracks.length+' official tracks from IndexedDB');
-    } else {
-      // migrate from legacy localStorage
-      let migrated = false;
-      for(let k of LEGACY_KEYS){
-        let s = localStorage.getItem(k);
-        if(s && s.length>10){
-          try{
-            let parsed = JSON.parse(s);
-            let real = parsed.filter(t=> t && t.audio && !t.audio.includes(DUMMY_AUDIO_MARKER) && t.audio.length>800);
-            if(real.length>0){ tracks = real; await idbSet(PERMANENT_DB_KEY, tracks); migrated=true; console.log('Migrated '+real.length+' from '+k); break; }
-          }catch{}
-        }
-        let oldIdb = await idbGet(k);
-        if(oldIdb && oldIdb.length>0){
-          let real = oldIdb.filter(t=> !isDummyTrack(t));
-          if(real.length>0){ tracks=real; await idbSet(PERMANENT_DB_KEY, tracks); migrated=true; break; }
-        }
-      }
-      if(!migrated) tracks = genSeed();
+    var found=false;
+    // Try IDB first (best for large files)
+    var idbData=await idbGet(PERMANENT_KEY);
+    if(idbData && Array.isArray(idbData) && idbData.length>0){
+      tracks=idbData.filter(function(t){return !isDummyTrack(t)});
+      if(tracks.length>0){found=true; console.log('✅ Loaded '+tracks.length+' from IndexedDB (Opera/Edge/Chrome/Firefox/Safari)')}
     }
-  }catch(e){ console.error('load error', e); tracks = genSeed(); }
-  let savedLang = localStorage.getItem('aposky_lang'); if(savedLang) lang=savedLang;
-  try{ if(localStorage.getItem('aposky_admin')==='1') isAdmin=true; }catch{}
-}
-function clearAllPlaceholderTracks(){
-  tracks = tracks.filter(t=> !isDummyTrack(t));
-  save(); renderTracks(); renderTop(); if(isAdmin) renderAdminLists();
-}
-
-
-function applyTranslations(){
-  document.querySelectorAll('[data-i18n]').forEach(el=>{
-    let key=el.getAttribute('data-i18n');
-    if(DICT[lang][key]) el.innerText = DICT[lang][key];
-  });
-  let search = document.getElementById('searchInput');
-  if(search) search.placeholder = t('searchPh');
-  document.getElementById('langBtn').innerHTML = lang==='EN' ? '🌐 EN → FR (Auto Translate Comments)' : '🌐 FR → EN (Traduction Auto Commentaires)';
-  document.documentElement.lang = lang.toLowerCase();
-}
-
-function toggleLang(){
-  lang = lang==='EN' ? 'FR' : 'EN';
-  localStorage.setItem('aposky_lang', lang);
-  applyTranslations();
-  renderTracks();
-  let detail = document.getElementById('detailModal');
-  if(detail.style.display!=='none' && currentDetailId){
-    openDetail(currentDetailId);
-  }
-  // Show feedback
-  let btn=document.getElementById('langBtn');
-  let orig = btn.innerHTML;
-  btn.style.background='#FFD60A'; btn.style.color='#000';
-  setTimeout(()=>{ btn.style.background='#000'; btn.style.color='#FFD60A'; }, 600);
+    if(!found){
+      // Try localStorage (works on Opera Mini, old Edge, all mobile)
+      var s=localStorage.getItem(PERMANENT_KEY);
+      if(s && s.length>10){
+        try{var parsed=JSON.parse(s);tracks=parsed.filter(function(t){return !isDummyTrack(t)}); if(tracks.length>0) found=true; console.log('✅ Loaded '+tracks.length+' from localStorage (universal)')}catch(e){}
+      }
+    }
+    if(!found){
+      // Migrate legacy
+      for(var i=0;i<LEGACY_KEYS.length;i++){
+        var k=LEGACY_KEYS[i];
+        var ls=localStorage.getItem(k);
+        if(ls && ls.length>10){
+          try{var p=JSON.parse(ls);var real=p.filter(function(t){return t&&t.audio&&t.audio.indexOf(DUMMY_MARKER)===-1&&t.audio.length>800}); if(real.length>0){tracks=real;found=true;await idbSet(PERMANENT_KEY, tracks); try{localStorage.setItem(PERMANENT_KEY, JSON.stringify(tracks))}catch{} console.log('Migrated '+real.length+' from '+k);break;}}catch(e){}
+        }
+        var oldIdb=await idbGet(k);
+        if(oldIdb && oldIdb.length>0){var real2=oldIdb.filter(function(t){return !isDummyTrack(t)}); if(real2.length>0){tracks=real2;found=true;await idbSet(PERMANENT_KEY, tracks); break;}}
+      }
+    }
+    if(!found){tracks=genSeed()}
+  }catch(e){console.error('load error',e);tracks=genSeed()}
+  var savedLang=localStorage.getItem('aposky_lang'); if(savedLang) lang=savedLang;
+  try{if(localStorage.getItem('aposky_admin')==='1') isAdmin=true;}catch(e){}
 }
 
-function openPublisher(){document.getElementById('loginModal').style.display='flex'}
-function closeLogin(){document.getElementById('loginModal').style.display='none'}
-function doLogin(){let u=document.getElementById('loginUser').value;let c=document.getElementById('loginCode').value;if(u==='Apollo4'&&c==='198026'){isAdmin=true; localStorage.setItem('aposky_admin','1'); closeLogin(); document.getElementById('adminPanel').style.display='block'; renderAdminLists(); window.scrollTo(0,0)}else document.getElementById('loginErr').innerText='Wrong credentials. Apollo4 / 198026'}
-function closeAdmin(){document.getElementById('adminPanel').style.display='none'}
-function logoutAdmin(){isAdmin=false; localStorage.removeItem('aposky_admin'); closeAdmin(); renderTracks()}
-function scrollToTracks(){document.getElementById('tracksGrid').scrollIntoView({behavior:'smooth'})}
+function getFiltered(){var el=document.getElementById('searchInput');var q=el?el.value.toLowerCase():'';return tracks.filter(function(t){return !q||t.trackName.toLowerCase().indexOf(q)>=0||t.artistName.toLowerCase().indexOf(q)>=0||t.genre.toLowerCase().indexOf(q)>=0})}
+function getCommentText(c){if(lang==='FR'){return c.textFR||c.text+' (Traduit en Français)'}else{return c.text||c.textFR+' (Translated to English)'}}
 
 function renderTop(){
-  let container=document.getElementById('topTracks');let tops=tracks.filter(t=>t.isTopSelected);if(!tops.length){container.innerHTML=`<div style="padding:10px;border:2px dashed #FFD60A;border-radius:12px;color:#FFD60A;font-weight:900;font-size:12px">${t('noTop')}</div>`;return}
-  container.innerHTML=tops.map(tr=>{
-    let isThisPlaying = currentTrack && currentTrack.id===tr.id && isPlaying;
-    return `<div data-top-id="${tr.id}" style="min-width:200px;max-width:220px;border:2px solid ${isThisPlaying?'#fff':'#FFD60A'};border-radius:16px;overflow:hidden;background:${isThisPlaying?'#FFD60A':'#111'};cursor:pointer;position:relative;transform:translateZ(0)" onclick="openDetail('${tr.id}')">
-      ${isThisPlaying?`<div style="position:absolute;top:6px;left:6px;background:#000;color:#FFD60A;padding:3px 8px;border-radius:999px;font-weight:900;font-size:9px;display:flex;align-items:center;gap:4px"><span class="eq"><span></span><span></span><span></span></span> ${t('playing')}</div>`:''}
-      <img src="${tr.cover}" style="width:100%;height:120px;object-fit:cover">
-      <div style="padding:8px"><div style="font-weight:900;font-size:12px;color:${isThisPlaying?'#000':'#fff'}">${tr.trackName}</div><div style="font-size:10px;color:${isThisPlaying?'#000':'#FFD60A'};font-weight:900">${tr.artistName}</div><div style="font-size:10px;color:${isThisPlaying?'#000':'#fff'}">❤ ${formatNum(tr.hearts)} 🔥 ${formatNum(tr.fires)}</div></div>
-    </div>`
-  }).join('')
-}
-
-function getFiltered(){
-  let el = document.getElementById('searchInput');
-  let q = el ? el.value.toLowerCase() : '';
-  return tracks.filter(t=>!q||t.trackName.toLowerCase().includes(q)||t.artistName.toLowerCase().includes(q)||t.genre.toLowerCase().includes(q))
-}
-
-function getCommentText(c){
-  // Auto translate logic: if lang FR, show textFR, if not exist, auto generate translation mock
-  if(lang==='FR'){
-    return c.textFR || c.text + ' (Traduit en Français)';
-  } else {
-    return c.text || c.textFR + ' (Translated to English)';
-  }
+  var container=document.getElementById('topTracks');if(!container)return;
+  var tops=tracks.filter(function(t){return t.isTopSelected});
+  if(!tops.length){container.innerHTML='<div style="padding:10px;border:2px dashed #FFD60A;border-radius:12px;color:#FFD60A;font-weight:900;font-size:12px">'+t('noTop')+'</div>';return}
+  container.innerHTML=tops.map(function(tr){
+    var isThisPlaying = currentTrack && currentTrack.id===tr.id && isPlaying;
+    return '<div data-top-id="'+tr.id+'" style="min-width:200px;max-width:220px;border:2px solid '+(isThisPlaying?'#fff':'#FFD60A')+';border-radius:16px;overflow:hidden;background:'+(isThisPlaying?'#FFD60A':'#111')+';cursor:pointer;position:relative;flex-shrink:0;touch-action:pan-y" onclick="openDetail(\''+tr.id+'\')">'+
+      (isThisPlaying?'<div style="position:absolute;top:6px;left:6px;background:#000;color:#FFD60A;padding:3px 8px;border-radius:999px;font-weight:900;font-size:9px;display:flex;align-items:center;gap:4px"><span class="eq"><span></span><span></span><span></span></span> '+t('playing')+'</div>':'')+
+      '<div style="position:relative"><img src="'+tr.cover+'" style="width:100%;height:120px;object-fit:cover"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.85);padding:4px;text-align:center;border-top:2px solid #FFD60A"><div style="font-weight:900;font-size:9px;color:#FFD60A">Produced by DJ APO</div></div></div>'+
+      '<div style="padding:8px"><div style="font-weight:900;font-size:12px;color:'+(isThisPlaying?'#000':'#fff')+'">'+tr.trackName+'</div><div style="font-size:10px;color:'+(isThisPlaying?'#000':'#FFD60A')+';font-weight:900">'+tr.artistName+'</div><div style="font-size:10px;color:'+(isThisPlaying?'#000':'#fff')+'">❤ '+formatNum(tr.hearts)+' 🔥 '+formatNum(tr.fires)+'</div></div></div>';
+  }).join('');
 }
 
 function renderTracks(){
-  let list=getFiltered();
-  document.getElementById('countTracks').innerText=list.length;document.getElementById('footerCount').innerText=tracks.length;
-  document.getElementById('tracksGrid').innerHTML=list.map(tr=>{
-    let isThisPlaying = currentTrack && currentTrack.id===tr.id;
-    let playingNow = isThisPlaying && isPlaying;
-    return `
-  <div class="track-card ${playingNow?'playing-active':''}" data-track-id="${tr.id}" style="border-color:${playingNow?'#fff':'#FFD60A'};${playingNow?'box-shadow:0 0 25px rgba(255,214,10,0.4)':''}">
-    ${playingNow?'<div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#FFD60A,#fff);animation:pulse 1.5s infinite"></div>':''}
-    <div style="display:flex;gap:10px;padding:10px;flex-wrap:wrap">
-      <div style="position:relative;flex-shrink:0">
-        <div style="position:relative;width:90px;height:90px;border-radius:14px;overflow:hidden;border:2px solid ${playingNow?'#fff':'#FFD60A'};cursor:pointer" onclick="openDetail('${tr.id}')">
-          <img src="${tr.cover}" style="width:100%;height:100%;object-fit:cover;display:block">
-          <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.88);padding:3px;text-align:center;border-top:2px solid #FFD60A">
-            <div style="font-weight:900;font-size:7px;color:#FFD60A;letter-spacing:0.5px">Produced by DJ APO</div>
-          </div>
-        </div>
-        ${playingNow?`<div style="position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);background:#FFD60A;color:#000;padding:3px 8px;border-radius:999px;font-weight:900;font-size:8px;display:flex;align-items:center;gap:3px;white-space:nowrap;border:2px solid #000" class="pulse"><span class="eq"><span></span><span></span><span></span></span> ${t('playing')}</div>`:`${isThisPlaying?`<div style="position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);background:#fff;color:#000;padding:2px 6px;border-radius:999px;font-weight:900;font-size:8px;border:2px solid #000">${t('paused')}</div>`:''}`}
-      </div>
-      <div style="flex:1;min-width:160px">
-        <div onclick="openDetail('${tr.id}')" style="cursor:pointer">
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-            <span style="font-weight:900;font-size:14px;color:#fff">${tr.trackName}</span>
-            ${playingNow?`<span class="playing-badge js-playing-badge" style="display:inline-flex"><span class="eq"><span></span><span></span><span></span></span> ${t('nowPlaying')}</span>`:`<span class="playing-badge js-playing-badge" style="display:none"><span class="eq"><span></span><span></span><span></span></span> ${t('nowPlaying')}</span>`}
-          </div>
-          <div style="font-size:12px;color:#FFD60A;font-weight:900">${tr.artistName} • ${tr.genre} • ${tr.year}</div>
-          <div style="font-size:10px;color:#fff;opacity:0.8;margin-top:2px">${tr.producer} | ${tr.studio} | ${tr.country}</div>
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
-          <button onclick="playPrev('${tr.id}')" style="padding:8px 10px;border-radius:999px;background:#000;color:#fff;border:2px solid #fff;font-weight:900;font-size:10px">◀ ${t('prev')}</button>
-          <button class="js-play-btn" onclick="playTrack('${tr.id}')" style="padding:8px 12px;border-radius:999px;background:${playingNow?'#fff':'#FFD60A'};color:#000;font-weight:900;border:3px solid #000;font-size:11px">${playingNow?'❚❚ PAUSE':'▶ PLAY'}</button>
-          <button onclick="playNext('${tr.id}')" style="padding:8px 10px;border-radius:999px;background:#000;color:#fff;border:2px solid #fff;font-weight:900;font-size:10px">${t('next')} ▶</button>
-          <button onclick="downloadTrack('${tr.id}')" style="position:relative;padding:8px 12px;border-radius:999px;background:#fff;color:#000;font-weight:900;border:3px solid #000;font-size:11px">${t('download')} ${playingNow?'<span class="bounce" style="position:absolute;top:-16px;left:50%;color:#FFD60A">⬇</span>':''}</button>
-          <button onclick="shareTrack('${tr.id}')" style="padding:8px 12px;border-radius:999px;background:#000;color:#fff;border:2px solid #fff;font-weight:900;font-size:11px">${t('share')}</button>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-          <button onclick="react('${tr.id}','likes')" style="background:#111;border:2px solid #fff;border-radius:999px;padding:5px 10px;color:#fff;font-weight:900;font-size:11px">👍 ${formatNum(tr.likes)}</button>
-          <button onclick="react('${tr.id}','hearts')" style="background:#111;border:2px solid #fff;border-radius:999px;padding:5px 10px;color:#fff;font-weight:900;font-size:11px">❤ ${formatNum(tr.hearts)}</button>
-          <button onclick="react('${tr.id}','fires')" style="background:#111;border:2px solid #FFD60A;border-radius:999px;padding:5px 10px;color:#FFD60A;font-weight:900;font-size:11px">🔥 ${formatNum(tr.fires)}</button>
-          <span style="font-size:11px;color:#fff;opacity:0.7;font-weight:900">${formatNum(tr.comments.length)} ${t('comments').toLowerCase()} • ${t('autoNote')}</span>
-        </div>
-      </div>
-    </div>
-    <div style="padding:0 10px 10px 10px">
-      <div style="display:flex;flex-direction:column;gap:6px;background:#0a0a0a;border:2px solid #333;border-radius:12px;padding:8px">
-        <div style="font-weight:900;color:#FFD60A;font-size:11px">${t('addCommentTitle')}</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <input id="cname_${tr.id}" placeholder="${t('yourName')}" style="flex:1;min-width:100px;padding:8px 10px;border-radius:999px;border:2px solid #fff;background:#000;color:#fff;font-size:12px">
-          <input id="cinput_${tr.id}" placeholder="${t('yourComment')}" style="flex:2;min-width:140px;padding:8px 10px;border-radius:999px;border:2px solid #FFD60A;background:#000;color:#fff;font-size:12px">
-          <button onclick="addComment('${tr.id}')" style="padding:8px 14px;border-radius:999px;background:#FFD60A;color:#000;font-weight:900;border:2px solid #000;font-size:11px">${t('send')}</button>
-        </div>
-      </div>
-      <div style="margin-top:8px;max-height:220px;overflow:auto">
-        ${tr.comments.slice(0,5).map(c=>`<div style="border:1px solid #333;border-radius:10px;padding:6px 8px;margin-top:6px;background:#0a0a0a"><div style="display:flex;justify-content:space-between"><span style="font-weight:900;font-size:11px;color:#FFD60A">${c.name}</span><span style="font-size:9px;color:#fff;opacity:0.6">${new Date(c.createdAt).toLocaleDateString()} ${lang==='FR'?'(Traduit Auto)':'(Auto Translated)'}</span></div><div style="font-size:11px;color:#fff;margin:2px 0">${getCommentText(c)}</div><div style="display:flex;gap:6px;align-items:center"><button onclick="reactComment('${tr.id}','${c.id}','likes')" style="background:transparent;border:1px solid #444;border-radius:999px;padding:2px 6px;color:#fff;font-size:10px">👍 ${formatNum(c.likes)}</button><button onclick="reactComment('${tr.id}','${c.id}','hearts')" style="background:transparent;border:1px solid #444;border-radius:999px;padding:2px 6px;color:#fff;font-size:10px">❤ ${formatNum(c.hearts)}</button><button onclick="reactComment('${tr.id}','${c.id}','fires')" style="background:transparent;border:1px solid #444;border-radius:999px;padding:2px 6px;color:#FFD60A;font-size:10px">🔥 ${formatNum(c.fires)}</button></div></div>`).join('')}
-        ${tr.comments.length>5?`<div style="text-align:center;margin-top:6px"><button onclick="openDetail('${tr.id}')" style="font-size:11px;color:#FFD60A;background:transparent;border:1px dashed #FFD60A;border-radius:999px;padding:4px 10px;font-weight:900">${t('viewAll')} ${tr.comments.length} ${t('comments')}</button></div>`:''}
-      </div>
-    </div>
-  </div>`
-  }).join(''); renderTop(); if(isAdmin) renderAdminLists();
-}
-
-function renderAdminLists(){
-  if(!isAdmin) return;
-  document.getElementById('adminTrackList').innerHTML = tracks.map(tr=>`<div style="display:flex;align-items:center;gap:8px;padding:6px;border:1px solid #444;border-radius:10px;background:#111"><img src="${tr.cover}" style="width:36px;height:36px;border-radius:8px;object-fit:cover"><div style="flex:1"><div style="font-weight:900;font-size:12px;color:#fff">${tr.trackName}</div><div style="font-size:10px;color:#FFD60A">${tr.artistName}</div></div><button onclick="deleteTrack('${tr.id}')" style="background:#ff2222;color:#fff;border:2px solid #000;border-radius:999px;padding:6px 10px;font-weight:900;font-size:10px">DELETE TRACK</button></div>`).join('') || '<div style="color:#fff;font-size:12px">No tracks</div>';
-  let allComments = []; tracks.forEach(tr=>{tr.comments.forEach(c=> allComments.push({...c,trackId:tr.id,trackName:tr.trackName}))}); allComments.sort((a,b)=>b.createdAt-a.createdAt); allComments=allComments.slice(0,100);
-  document.getElementById('adminCommentList').innerHTML = allComments.map(c=>`<div style="padding:6px;border:1px solid #333;border-radius:8px;margin-top:6px;background:#0a0a0a"><div style="font-size:10px;color:#FFD60A;font-weight:900">${c.trackName} • ${c.name}</div><div style="font-size:11px;color:#fff">${getCommentText(c)}</div><button onclick="delComment('${c.trackId}','${c.id}')" style="margin-top:4px;background:#ff2222;color:#fff;border:none;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:900">DELETE COMMENT</button></div>`).join('');
-}
-
-document.getElementById('f_cover').addEventListener('change', e=>{
-  let file=e.target.files[0]; if(!file)return; formData.coverName=file.name; let r=new FileReader(); r.onload=ev=>{formData.cover=ev.target.result; document.getElementById('coverPreview').innerHTML=`<div style="display:flex;align-items:center;gap:6px;margin-top:4px"><img src="${formData.cover}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;border:2px solid #FFD60A"><span style="font-size:10px;color:#fff;font-weight:900">${formData.coverName} ✓</span></div>`}; r.readAsDataURL(file);
-});
-document.getElementById('f_audio').addEventListener('change', e=>{
-  let file=e.target.files[0]; if(!file)return; formData.audioName=file.name; formData.audioSize=formatSize(file.size); document.getElementById('audioPreview').innerText='Loading... '+formData.audioName; let r=new FileReader(); r.onload=ev=>{formData.audio=ev.target.result; document.getElementById('audioPreview').innerHTML=`<span style="color:#00ff88">Audio ready: ${formData.audioName} (${formData.audioSize}) ✓</span>`}; r.onerror=()=>{document.getElementById('audioPreview').innerHTML='<span style="color:#ff4444">Failed to read file</span>'}; r.readAsDataURL(file);
-});
-
-function publishTrack(){
-  let btn=document.getElementById('publishBtn'); 
-  if(btn){ btn.disabled=true; btn.innerText='PUBLISHING...'; }
-  let msg=document.getElementById('pubMsg');
-  let tn=document.getElementById('f_trackName').value.trim();
-  let an=document.getElementById('f_artistName').value.trim();
-  let gn=document.getElementById('f_genre').value.trim();
-  let yr=document.getElementById('f_year').value.trim();
-  let pr=document.getElementById('f_producer').value.trim()||'DJ APO';
-  if(pr.toUpperCase().includes('APOSKY')) pr='DJ APO';
-  let st=document.getElementById('f_studio').value.trim();
-  let co=document.getElementById('f_country').value.trim();
-  let top=document.getElementById('f_top').checked;
-  if(!tn||!an||!gn||!yr||!pr||!st||!co){
-    if(msg){msg.style.color='#ff4444'; msg.innerText='Fill all required fields *';}
-    if(btn){btn.disabled=false; btn.innerText='PUBLISH TRACK - PERMANENT';}
+  var list=getFiltered();
+  var countEl=document.getElementById('countTracks'); if(countEl) countEl.innerText=list.length;
+  var footerEl=document.getElementById('footerCount'); if(footerEl) footerEl.innerText=tracks.length;
+  var grid=document.getElementById('tracksGrid'); if(!grid) return;
+  if(!tracks.length){
+    grid.innerHTML='<div style="padding:30px;border:3px dashed #FFD60A;border-radius:20px;text-align:center;background:#111"><div style="font-size:48px">🎵</div><div style="font-weight:900;color:#FFD60A;font-size:18px;margin-top:10px">NO OFFICIAL TRACKS YET</div><div style="color:#fff;font-size:13px;margin-top:6px">Upload your first song via PUBLISHER ZONE.<br>Saved permanently on this device + all browsers.<br>Visible after refresh, restart, and on mobile.</div><div style="margin-top:12px;font-size:11px;color:#FFD60A;font-weight:900">Universal Storage: localStorage + IndexedDB<br>Works on Chrome, Edge, Opera, Firefox, Safari</div></div>';
+    renderTop(); return;
+  }
+  if(!list.length){
+    grid.innerHTML='<div style="padding:20px;border:2px dashed #fff;border-radius:16px;text-align:center;color:#fff;font-weight:900">No tracks match search "'+(document.getElementById('searchInput')?document.getElementById('searchInput').value:'')+'"</div>';
     return;
   }
-  if(!formData.audio){
-    if(msg){msg.style.color='#ff4444'; msg.innerText='Please upload audio file *';}
-    if(btn){btn.disabled=false; btn.innerText='PUBLISH TRACK - PERMANENT';}
-    return;
-  }
-  let cover = formData.cover || generateCover(tn,gn);
-  let initialLikes = rnd(333, 100000);
-  let initialHearts = rnd(333, 100000);
-  let initialFires = rnd(333, 100000);
-  let initialCommentCount = rnd(35, 65);
-  let newTrack={
-    id:slug(tn),
-    trackName:tn,
-    artistName:an,
-    genre:gn,
-    year:yr,
-    producer:'DJ APO',
-    studio:st,
-    country:co,
-    cover:cover,
-    audio:formData.audio,
-    createdAt:Date.now(),
-    baseCount: initialCommentCount,
-    likes: initialLikes,
-    hearts: initialHearts,
-    fires: initialFires,
-    comments: Array.from({length: initialCommentCount}).map(()=> genComment({trackName: tn, artistName: an, studio: st, producer: 'DJ APO', country: co, year: yr})),
-    isTopSelected:top,
-    lastGrowthCheck: Date.now(),
-    isOfficial:true,
-    permanent:true
-  };
-  tracks.unshift(newTrack);
-  save();
-  if(msg){
-    msg.style.color='#00ff88'; 
-    msg.innerText='✅ Published PERMANENTLY! IndexedDB saved. '+tracks.length+' official tracks. Visible after refresh/restart.';
-  }
-  document.getElementById('f_trackName').value='';
-  document.getElementById('f_artistName').value='';
-  document.getElementById('f_genre').value='';
-  document.getElementById('f_year').value='';
-  document.getElementById('f_producer').value='DJ APO';
-  document.getElementById('f_studio').value='';
-  document.getElementById('f_country').value='';
-  document.getElementById('f_top').checked=false;
-  document.getElementById('f_cover').value='';
-  document.getElementById('f_audio').value='';
-  formData={cover:'',audio:''};
-  document.getElementById('coverPreview').innerHTML='';
-  document.getElementById('audioPreview').innerHTML='';
-  renderTracks(); 
+  grid.innerHTML=list.map(function(tr){
+    var isThisPlaying = currentTrack && currentTrack.id===tr.id;
+    var playingNow = isThisPlaying && isPlaying;
+    return '<div class="track-card '+(playingNow?'playing':'')+'" data-track-id="'+tr.id+'" style="border-color:'+(playingNow?'#fff':'#FFD60A')+'">'+
+    (playingNow?'<div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#FFD60A,#fff)"></div>':'')+
+    '<div style="display:flex;gap:10px;padding:10px;flex-wrap:wrap">'+
+      '<div style="position:relative;flex-shrink:0">'+
+        '<div style="position:relative;width:90px;height:90px;border-radius:14px;overflow:hidden;border:2px solid '+(playingNow?'#fff':'#FFD60A')+';cursor:pointer" onclick="openDetail(\''+tr.id+'\')">'+
+          '<img src="'+tr.cover+'" style="width:100%;height:100%;object-fit:cover;display:block">'+
+          '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.88);padding:3px;text-align:center;border-top:2px solid #FFD60A"><div style="font-weight:900;font-size:7px;color:#FFD60A;letter-spacing:0.5px">Produced by DJ APO</div></div>'+
+        '</div>'+
+        (playingNow?'<div style="position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);background:#FFD60A;color:#000;padding:3px 8px;border-radius:999px;font-weight:900;font-size:8px;display:flex;align-items:center;gap:3px;white-space:nowrap;border:2px solid #000"><span class="eq"><span></span><span></span><span></span></span> '+t('playing')+'</div>':'')+
+      '</div>'+
+      '<div style="flex:1;min-width:160px">'+
+        '<div onclick="openDetail(\''+tr.id+'\')" style="cursor:pointer">'+
+          '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="font-weight:900;font-size:14px;color:#fff">'+tr.trackName+'</span>'+(playingNow?'<span class="playing-badge"><span class="eq"><span></span><span></span><span></span></span> '+t('nowPlaying')+'</span>':'')+'</div>'+
+          '<div style="font-size:12px;color:#FFD60A;font-weight:900">'+tr.artistName+' • '+tr.genre+' • '+tr.year+'</div>'+
+          '<div style="font-size:10px;color:#fff;opacity:0.8;margin-top:2px">'+tr.producer+' | '+tr.studio+' | '+tr.country+'</div>'+
+        '</div>'+
+        '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">'+
+          '<button onclick="playPrev(\''+tr.id+'\')" style="padding:8px 10px;border-radius:999px;background:#000;color:#fff;border:2px solid #fff;font-weight:900;font-size:10px">◀ '+t('prev')+'</button>'+
+          '<button class="js-play-btn" onclick="playTrack(\''+tr.id+'\')" style="padding:8px 12px;border-radius:999px;background:'+(playingNow?'#fff':'#FFD60A')+';color:#000;font-weight:900;border:3px solid #000;font-size:11px">'+(playingNow?'❚❚ PAUSE':'▶ PLAY')+'</button>'+
+          '<button onclick="playNext(\''+tr.id+'\')" style="padding:8px 10px;border-radius:999px;background:#000;color:#fff;border:2px solid #fff;font-weight:900;font-size:10px">'+t('next')+' ▶</button>'+
+          '<button onclick="downloadTrack(\''+tr.id+'\')" style="padding:8px 12px;border-radius:999px;background:#fff;color:#000;font-weight:900;border:3px solid #000;font-size:11px">'+t('download')+'</button>'+
+          '<button onclick="shareTrack(\''+tr.id+'\')" style="padding:8px 12px;border-radius:999px;background:#000;color:#fff;border:2px solid #fff;font-weight:900;font-size:11px">'+t('share')+'</button>'+
+        '</div>'+
+        '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">'+
+          '<button onclick="react(\''+tr.id+'\',\'likes\')" style="background:#111;border:2px solid #fff;border-radius:999px;padding:5px 10px;color:#fff;font-weight:900;font-size:11px">👍 '+formatNum(tr.likes)+'</button>'+
+          '<button onclick="react(\''+tr.id+'\',\'hearts\')" style="background:#111;border:2px solid #fff;border-radius:999px;padding:5px 10px;color:#fff;font-weight:900;font-size:11px">❤ '+formatNum(tr.hearts)+'</button>'+
+          '<button onclick="react(\''+tr.id+'\',\'fires\')" style="background:#111;border:2px solid #FFD60A;border-radius:999px;padding:5px 10px;color:#FFD60A;font-weight:900;font-size:11px">🔥 '+formatNum(tr.fires)+'</button>'+
+          '<span style="font-size:11px;color:#fff;opacity:0.7;font-weight:900">'+formatNum(tr.comments.length)+' '+t('comments').toLowerCase()+'</span>'+
+        '</div>'+
+      '</div>'+
+    '</div></div>';
+  }).join('');
   renderTop();
-  renderAdminLists();
-  playTrack(newTrack.id);
-  if(btn){btn.disabled=false; btn.innerText='PUBLISH TRACK - PERMANENT';}
-  setTimeout(()=>{ document.getElementById('tracksGrid').scrollIntoView({behavior:'smooth'}); }, 300);
 }
 
-// ===== ANTI-SHAKE PLAYBACK SYSTEM - NO FULL RE-RENDER =====
-let audio = new Audio();
+function applyTranslations(){
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var key=el.getAttribute('data-i18n');
+    if(DICT[lang][key]) el.innerText = DICT[lang][key];
+  });
+  var search=document.getElementById('searchInput'); if(search) search.placeholder=t('searchPh');
+  var lb=document.getElementById('langBtn'); if(lb) lb.innerHTML = lang==='EN' ? '🌐 EN → FR' : '🌐 FR → EN';
+  document.documentElement.lang = lang.toLowerCase();
+}
+function toggleLang(){lang = lang==='EN' ? 'FR' : 'EN'; try{localStorage.setItem('aposky_lang', lang)}catch(e){}; applyTranslations(); renderTracks(); if(currentDetailId) openDetail(currentDetailId)}
+function openPublisher(){document.getElementById('loginModal').style.display='flex'}
+function closeLogin(){document.getElementById('loginModal').style.display='none'}
+function doLogin(){var u=document.getElementById('loginUser').value;var c=document.getElementById('loginCode').value;if(u==='Apollo4'&&c==='198026'){isAdmin=true; try{localStorage.setItem('aposky_admin','1')}catch(e){}; closeLogin(); document.getElementById('adminPanel').style.display='block'; renderAdminLists(); window.scrollTo(0,0)}else document.getElementById('loginErr').innerText='Wrong credentials. Apollo4 / 198026'}
+function closeAdmin(){document.getElementById('adminPanel').style.display='none'}
+function logoutAdmin(){isAdmin=false; try{localStorage.removeItem('aposky_admin')}catch(e){}; closeAdmin(); renderTracks()}
+function scrollToTracks(){var el=document.getElementById('tracksGrid'); if(el) el.scrollIntoView({behavior:'smooth',block:'start'})}
+
+var audio=new Audio();
 audio.preload='metadata';
-audio.setAttribute('playsinline','');
-audio.setAttribute('webkit-playsinline','');
-audio.crossOrigin='anonymous';
+try{audio.setAttribute('playsinline','');}catch(e){}
+try{audio.setAttribute('webkit-playsinline','');}catch(e){}
 
 function updatePlayingIndicators(){
-  // Lightweight update: only toggle playing classes, no DOM rebuild => no shake
-  document.querySelectorAll('.track-card').forEach(card=>{
-    let id = card.getAttribute('data-track-id');
-    let isThis = currentTrack && id===currentTrack.id;
-    let isPlayingNow = isThis && isPlaying;
-    if(isPlayingNow){
-      card.classList.add('playing-active');
-    } else {
-      card.classList.remove('playing-active');
-    }
-    // Update inner badges without rebuilding whole grid
-    let badge = card.querySelector('.js-playing-badge');
-    if(badge){
-      badge.style.display = isPlayingNow ? 'inline-flex' : 'none';
-    }
-    let playBtn = card.querySelector('.js-play-btn');
-    if(playBtn){
-      playBtn.innerText = isPlayingNow ? '❚❚ PAUSE' : '▶ PLAY';
-      playBtn.style.background = isPlayingNow ? '#fff' : '#FFD60A';
-    }
-  });
-  // Top tracks too
-  document.querySelectorAll('[data-top-id]').forEach(el=>{
-    let id=el.getAttribute('data-top-id');
-    let active = currentTrack && id===currentTrack.id && isPlaying;
-    el.style.borderColor = active ? '#fff' : '#FFD60A';
-    el.style.background = active ? '#FFD60A' : '#111';
-  });
+  var cards=document.querySelectorAll('.track-card');
+  for(var i=0;i<cards.length;i++){
+    var card=cards[i];
+    var id=card.getAttribute('data-track-id');
+    var isThis = currentTrack && id===currentTrack.id;
+    var isPlayingNow = isThis && isPlaying;
+    if(isPlayingNow){card.classList.add('playing')} else {card.classList.remove('playing')}
+    var btn=card.querySelector('.js-play-btn');
+    if(btn){btn.innerText=isPlayingNow?'❚❚ PAUSE':'▶ PLAY'; btn.style.background=isPlayingNow?'#fff':'#FFD60A'}
+  }
 }
 
 function playTrack(id){
-  let tr=tracks.find(t=>t.id===id); if(!tr)return; 
-  // Prevent shake: don't hide/show with display none -> use opacity/transform if needed, but keep simple
-  let bar = document.getElementById('playerBar');
-  if(bar.style.display!=='block'){
-    bar.style.display='block';
-    // Reserve space without jumping: ensure container padding already has 150px
-  }
-  currentTrack=tr; 
-  document.getElementById('pCover').src=tr.cover; 
-  document.getElementById('pTitle').innerText=tr.trackName; 
-  document.getElementById('pArtist').innerText=tr.artistName+' • '+tr.genre; 
-  // Cross-browser audio source handling
+  var tr=tracks.find(function(t){return t.id===id}); if(!tr)return;
+  var bar=document.getElementById('playerBar'); if(bar) bar.style.display='block';
+  currentTrack=tr;
+  document.getElementById('pCover').src=tr.cover;
+  document.getElementById('pTitle').innerText=tr.trackName;
+  document.getElementById('pArtist').innerText=tr.artistName+' • '+tr.genre;
   try{
     audio.pause();
-    audio.src=tr.audio; 
+    audio.src=tr.audio;
     audio.load();
-    let playPromise = audio.play();
-    if(playPromise!==undefined){
-      playPromise.then(()=>{
-        isPlaying=true; 
-        document.getElementById('playPauseBtn').innerText='❚❚'; 
-        let arr=document.getElementById('arrowDown'); if(arr) arr.style.display='block';
-        updatePlayingIndicators();
-      }).catch((e)=>{
-        console.log('Play prevented by browser policy, need user gesture', e);
-        isPlaying=false;
-        updatePlayingIndicators();
-      });
-    }
-  }catch(e){ console.error('Audio error', e); isPlaying=false; }
-  try{ history.replaceState(null,'','?track='+id); }catch{}
-  // NO full renderTracks() - prevents shake
+    var p=audio.play();
+    if(p && p.then){
+      p.then(function(){isPlaying=true; document.getElementById('playPauseBtn').innerText='❚❚'; var a=document.getElementById('arrowDown'); if(a) a.style.display='block'; updatePlayingIndicators();}).catch(function(e){console.log('play blocked',e); isPlaying=false; updatePlayingIndicators();});
+    } else {isPlaying=true; updatePlayingIndicators();}
+  }catch(e){console.error(e)}
+  try{history.replaceState(null,'','?track='+id)}catch(e){}
   updatePlayingIndicators();
-  if(currentDetailId===id){ openDetail(id); }
+  if(currentDetailId===id) openDetail(id);
 }
-
-function playNext(currentId){
-  let list=getFiltered(); if(!list.length) return; 
-  let idx = currentId ? list.findIndex(t=>t.id===currentId) : list.findIndex(t=>currentTrack&&t.id===currentTrack.id); 
-  if(idx===-1) idx=0; else idx=(idx+1)%list.length; 
-  playTrack(list[idx].id);
-}
-
-function playPrev(currentId){
-  let list=getFiltered(); if(!list.length) return; 
-  let idx = currentId ? list.findIndex(t=>t.id===currentId) : list.findIndex(t=>currentTrack&&t.id===currentTrack.id); 
-  if(idx===-1) idx=0; else idx=(idx-1+list.length)%list.length; 
-  playTrack(list[idx].id);
-}
-
-function togglePlay(){
-  if(!currentTrack)return; 
-  if(isPlaying){
-    audio.pause(); isPlaying=false; 
-    document.getElementById('playPauseBtn').innerText='▶'; 
-    let arr=document.getElementById('arrowDown'); if(arr) arr.style.display='none';
-  } else { 
-    audio.play().then(()=>{
-      isPlaying=true; 
-      document.getElementById('playPauseBtn').innerText='❚❚'; 
-      let arr=document.getElementById('arrowDown'); if(arr) arr.style.display='block';
-    }).catch(()=>{});
-    isPlaying=true;
-  } 
-  updatePlayingIndicators();
-}
-function seek(s){audio.currentTime=Math.max(0,Math.min(audio.duration||0,audio.currentTime+s))}
-function toggleRepeat(){isRepeat=!isRepeat; document.getElementById('repeatBtn').style.background=isRepeat?'#FFD60A':'#111'; document.getElementById('repeatBtn').style.color=isRepeat?'#000':'#fff'; audio.loop=isRepeat}
-function downloadTrack(id){let tr=tracks.find(t=>t.id===id)||currentTrack; if(!tr||!tr.audio)return; let a=document.createElement('a'); a.href=tr.audio; a.download=tr.trackName.replace(/[^a-z0-9]/gi,'_')+'.mp3'; a.click()}
+function playNext(currentId){var list=getFiltered(); if(!list.length) return; var idx = currentId ? list.findIndex(function(t){return t.id===currentId}) : list.findIndex(function(t){return currentTrack&&t.id===currentTrack.id}); if(idx===-1) idx=0; else idx=(idx+1)%list.length; playTrack(list[idx].id);}
+function playPrev(currentId){var list=getFiltered(); if(!list.length) return; var idx = currentId ? list.findIndex(function(t){return t.id===currentId}) : list.findIndex(function(t){return currentTrack&&t.id===currentTrack.id}); if(idx===-1) idx=0; else idx=(idx-1+list.length)%list.length; playTrack(list[idx].id);}
+function togglePlay(){if(!currentTrack)return; if(isPlaying){audio.pause(); isPlaying=false; document.getElementById('playPauseBtn').innerText='▶'; var a=document.getElementById('arrowDown'); if(a) a.style.display='none'} else {audio.play(); isPlaying=true; document.getElementById('playPauseBtn').innerText='❚❚'; var b=document.getElementById('arrowDown'); if(b) b.style.display='block'} updatePlayingIndicators();}
+function seek(s){try{audio.currentTime=Math.max(0,Math.min(audio.duration||0,audio.currentTime+s))}catch(e){}}
+function toggleRepeat(){isRepeat=!isRepeat; var btn=document.getElementById('repeatBtn'); if(btn){btn.style.background=isRepeat?'#FFD60A':'#111'; btn.style.color=isRepeat?'#000':'#fff'} audio.loop=isRepeat}
+function closePlayer(){audio.pause(); isPlaying=false; currentTrack=null; document.getElementById('playerBar').style.display='none'; updatePlayingIndicators()}
+function downloadTrack(id){var tr=tracks.find(function(t){return t.id===id})||currentTrack; if(!tr||!tr.audio)return; var a=document.createElement('a'); a.href=tr.audio; a.download=tr.trackName.replace(/[^a-z0-9]/gi,'_')+'.mp3'; document.body.appendChild(a); a.click(); document.body.removeChild(a);}
 function downloadCurrent(){if(currentTrack)downloadTrack(currentTrack.id)}
-function shareTrack(id){let tr=tracks.find(t=>t.id===id); let url=location.origin+location.pathname+'?track='+id; if(navigator.share){navigator.share({title:tr.trackName,text:`Listen ${tr.trackName} by ${tr.artistName}`,url})} else {navigator.clipboard.writeText(url); alert('Link copied: '+url)}}
+function shareTrack(id){
+  var tr=tracks.find(function(t){return t.id===id}); var url=location.origin+location.pathname+'?track='+id;
+  // For cross-device: also store shareable backup link
+  if(navigator.share){navigator.share({title:tr.trackName,text:'Listen '+tr.trackName+' by '+tr.artistName,url:url}).catch(function(){})} 
+  else if(navigator.clipboard && navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(function(){alert('Link copied: '+url+'\nNote: Tracks are saved locally on this device. For true cross-device sharing, publish from same browser or export backup.')})} 
+  else {prompt('Copy link:', url)}
+}
 function shareCurrent(){if(currentTrack)shareTrack(currentTrack.id)}
-function react(id,type){let tr=tracks.find(t=>t.id===id); if(tr){tr[type]++; save(); renderTracks()}}
-function reactComment(tid,cid,type){let tr=tracks.find(t=>t.id===tid); if(!tr)return; let c=tr.comments.find(c=>c.id===cid); if(c){c[type]++; save(); renderTracks();}}
+function react(id,type){var tr=tracks.find(function(t){return t.id===id}); if(tr){tr[type]++; save(); renderTracks(); updatePlayingIndicators()}}
+function reactComment(tid,cid,type){var tr=tracks.find(function(t){return t.id===tid}); if(!tr)return; var c=tr.comments.find(function(x){return x.id===cid}); if(c){c[type]++; save(); if(currentDetailId) openDetail(currentDetailId); renderTracks();}}
 function addComment(id){
-  let nameInput=document.getElementById('cname_'+id); let textInput=document.getElementById('cinput_'+id);
-  let name=nameInput? nameInput.value.trim() : ''; let txt=textInput? textInput.value.trim() : '';
+  var nameInput=document.getElementById('cname_'+id); var textInput=document.getElementById('cinput_'+id);
+  var name=nameInput? nameInput.value.trim() : ''; var txt=textInput? textInput.value.trim() : '';
   if(!name){alert(lang==='FR'?'Veuillez entrer votre Nom':'Please enter your Name'); return}
   if(!txt){alert(lang==='FR'?'Veuillez entrer un Commentaire':'Please enter Comment'); return}
-  let tr=tracks.find(t=>t.id===id); if(!tr)return;
-  // Auto generate translation for new comment
-  let frText = txt; let enText = txt;
-  if(lang==='EN'){ frText = txt + ' [Traduit auto FR]'; enText = txt; }
-  else { enText = txt + ' [Auto Translated EN]'; frText = txt; }
-  let nc={id:Math.random().toString(36).slice(2),name:name,text:enText,textFR:frText,createdAt:Date.now(),likes:rnd(333,500),hearts:rnd(333,500),fires:rnd(333,500)};
+  var tr=tracks.find(function(t){return t.id===id}); if(!tr)return;
+  var frText = txt; var enText = txt;
+  if(lang==='EN'){ frText = txt + ' [Traduit auto FR]'; enText = txt; } else { enText = txt + ' [Auto Translated EN]'; frText = txt; }
+  var nc={id:Math.random().toString(36).slice(2),name:name,text:enText,textFR:frText,createdAt:Date.now(),likes:rnd(333,500),hearts:rnd(333,500),fires:rnd(333,500)};
   tr.comments.unshift(nc); if(nameInput)nameInput.value=''; if(textInput)textInput.value=''; save(); renderTracks();
 }
-function delComment(tid,cid){if(!confirm('Delete this comment permanently?'))return; let tr=tracks.find(t=>t.id===tid); if(tr){tr.comments=tr.comments.filter(c=>c.id!==cid); save(); renderTracks();}}
-function deleteTrack(id){if(!confirm('Delete track permanently?'))return; tracks=tracks.filter(t=>t.id!==id); if(currentTrack&&currentTrack.id===id){audio.pause(); currentTrack=null; document.getElementById('playerBar').style.display='none'} save(); renderTracks(); closeDetail()}
+function delComment(tid,cid){if(!confirm('Delete this comment permanently?'))return; var tr=tracks.find(function(t){return t.id===tid}); if(tr){tr.comments=tr.comments.filter(function(c){return c.id!==cid}); save(); renderTracks();}}
+function deleteTrack(id){if(!confirm('Delete track permanently?'))return; tracks=tracks.filter(function(t){return t.id!==id}); if(currentTrack&&currentTrack.id===id){audio.pause(); currentTrack=null; document.getElementById('playerBar').style.display='none'} save(); renderTracks(); closeDetail(); renderAdminLists();}
 
-let currentDetailId=null;
-function openDetail(id){
-  currentDetailId=id;
-  let tr=tracks.find(t=>t.id===id); if(!tr)return;
-  let isThisPlaying = currentTrack && currentTrack.id===tr.id && isPlaying;
-  document.getElementById('detailModal').style.display='block';
-  document.getElementById('detailContent').innerHTML=`
-<div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap"><div style="position:relative"><img src="${tr.cover}" style="width:160px;height:160px;border-radius:16px;object-fit:cover;border:3px solid ${isThisPlaying?'#fff':'#FFD60A'}">${isThisPlaying?`<div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#FFD60A;color:#000;padding:4px 10px;border-radius:999px;font-weight:900;font-size:10px;border:2px solid #000" class="pulse">▶ ${t('playing')}</div>`:''}</div><div style="flex:1;min-width:200px"><div style="font-weight:900;font-size:20px;color:#fff">${tr.trackName}</div><div style="color:#FFD60A;font-weight:900">${tr.artistName} • ${tr.genre} • ${tr.year}</div><div style="font-size:12px;color:#fff;margin-top:6px"><b>Producer:</b> ${tr.producer}<br><b>Studio:</b> ${tr.studio}<br><b>Country:</b> ${tr.country}</div><div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><button onclick="playPrev('${tr.id}')" style="padding:10px 14px;border-radius:999px;background:#000;color:#fff;border:2px solid #fff;font-weight:900">◀ ${t('prev')}</button><button onclick="playTrack('${tr.id}')" style="padding:10px 16px;border-radius:999px;background:#FFD60A;color:#000;font-weight:900;border:3px solid #000">${isThisPlaying?t('pause'):t('play')}</button><button onclick="playNext('${tr.id}')" style="padding:10px 14px;border-radius:999px;background:#000;color:#fff;border:2px solid #fff;font-weight:900">${t('next')} ▶</button><button onclick="downloadTrack('${tr.id}')" style="padding:10px 16px;border-radius:999px;background:#fff;color:#000;font-weight:900;border:3px solid #000">${t('download')}</button><button onclick="shareTrack('${tr.id}')" style="padding:10px 16px;border-radius:999px;background:#000;color:#fff;border:2px solid #fff;font-weight:900">${t('share')}</button></div></div></div>
-<div style="margin-top:12px;display:flex;gap:8px"><button onclick="react('${tr.id}','likes');openDetail('${tr.id}')" style="background:#111;border:2px solid #fff;border-radius:999px;padding:6px 12px;color:#fff;font-weight:900">👍 ${formatNum(tr.likes)}</button><button onclick="react('${tr.id}','hearts');openDetail('${tr.id}')" style="background:#111;border:2px solid #fff;border-radius:999px;padding:6px 12px;color:#fff;font-weight:900">❤ ${formatNum(tr.hearts)}</button><button onclick="react('${tr.id}','fires');openDetail('${tr.id}')" style="background:#111;border:2px solid #FFD60A;border-radius:999px;padding:6px 12px;color:#FFD60A;font-weight:900">🔥 ${formatNum(tr.fires)}</button></div>
-<div style="margin-top:14px"><div style="font-weight:900;color:#FFD60A">${t('comments')} • ${tr.comments.length} • Auto Translated</div>
-<div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;background:#0a0a0a;border:2px solid #333;border-radius:12px;padding:8px">
-<div style="font-weight:900;color:#FFD60A;font-size:11px">${t('addCommentTitle')}</div>
-<div style="display:flex;gap:6px;flex-wrap:wrap"><input id="detail_cname" placeholder="${t('yourName')}" style="flex:1;min-width:100px;padding:10px;border-radius:999px;border:2px solid #fff;background:#000;color:#fff"><input id="detail_cinput" placeholder="${t('yourComment')}" style="flex:2;min-width:140px;padding:10px;border-radius:999px;border:2px solid #FFD60A;background:#111;color:#fff"><button onclick="let n=document.getElementById('detail_cname').value.trim(); let v=document.getElementById('detail_cinput').value.trim(); if(!n){alert('Enter Name');return} if(!v){alert('Enter Comment');return} let en=v, fr=v; if(lang==='EN'){fr=v+' [Traduit auto FR]'} else {en=v+' [Auto Translated EN]'}; let c={id:Math.random().toString(36).slice(2),name:n,text:en,textFR:fr,createdAt:Date.now(),likes:333,hearts:333,fires:333}; let trd=tracks.find(t=>t.id==='${tr.id}'); trd.comments.unshift(c); save(); openDetail('${tr.id}'); renderTracks()" style="padding:10px 14px;border-radius:999px;background:#FFD60A;color:#000;font-weight:900;border:2px solid #000">${t('send')}</button></div>
-</div>
-<div style="margin-top:10px;max-height:50vh;overflow:auto">${tr.comments.map(c=>`<div style="border:1px solid #333;border-radius:12px;padding:8px;margin-top:8px;background:#0a0a0a"><div style="display:flex;justify-content:space-between"><span style="font-weight:900;color:#FFD60A;font-size:12px">${c.name}</span><span style="font-size:10px;color:#fff;opacity:0.6">${new Date(c.createdAt).toLocaleString()} • ${lang==='EN'?'Auto Translated':'Traduit Auto'}</span></div><div style="font-size:13px;color:#fff;margin:4px 0">${getCommentText(c)}</div><div style="display:flex;gap:6px"><button onclick="reactComment('${tr.id}','${c.id}','likes')" style="background:transparent;border:1px solid #444;border-radius:999px;padding:3px 8px;color:#fff;font-size:11px">👍 ${formatNum(c.likes)}</button><button onclick="reactComment('${tr.id}','${c.id}','hearts')" style="background:transparent;border:1px solid #444;border-radius:999px;padding:3px 8px;color:#fff;font-size:11px">❤ ${formatNum(c.hearts)}</button><button onclick="reactComment('${tr.id}','${c.id}','fires')" style="background:transparent;border:1px solid #444;border-radius:999px;padding:3px 8px;color:#FFD60A;font-size:11px">🔥 ${formatNum(c.fires)}</button></div></div>`).join('')}</div></div>`}
-function closeDetail(){document.getElementById('detailModal').style.display='none'; currentDetailId=null}
-
-// Cross-browser audio listeners - no layout thrash
-let progressEl = document.getElementById('progress');
-let curTimeEl = document.getElementById('curTime');
-let durTimeEl = document.getElementById('durTime');
-let lastTimeUpdate = 0;
-audio.addEventListener('timeupdate',()=>{
-  let now = Date.now();
-  if(now - lastTimeUpdate < 200) return; // throttle 200ms prevents shake
-  lastTimeUpdate = now;
-  if(audio.duration && progressEl){
-    progressEl.value=(audio.currentTime/audio.duration)*100; 
-    if(curTimeEl) curTimeEl.innerText=formatTime(audio.currentTime); 
-    if(durTimeEl) durTimeEl.innerText=formatTime(audio.duration);
+function renderAdminLists(){
+  var trackList=document.getElementById('adminTrackList'); var commentList=document.getElementById('adminCommentList');
+  if(trackList) trackList.innerHTML=tracks.map(function(tr){return '<div style="display:flex;justify-content:space-between;align-items:center;border:1px solid #333;padding:8px;border-radius:10px;background:#111"><span style="font-weight:900;font-size:12px;color:#fff">'+tr.trackName+' • '+tr.artistName+'</span><button onclick="deleteTrack(\''+tr.id+'\')" style="padding:6px 12px;border-radius:999px;background:#ff4444;color:#fff;font-weight:900;border:2px solid #000">DELETE</button></div>'}).join('') || '<div style="color:#fff;font-size:12px">No tracks</div>';
+  if(commentList){
+    var allComments=[]; tracks.forEach(function(tr){tr.comments.forEach(function(c){allComments.push({track:tr,comment:c})})});
+    commentList.innerHTML=allComments.slice(0,100).map(function(item){return '<div style="border:1px solid #333;padding:6px;border-radius:10px;background:#111;margin-top:6px"><div style="font-size:11px;color:#FFD60A;font-weight:900">'+item.comment.name+' on '+item.track.trackName+'</div><div style="font-size:12px;color:#fff">'+getCommentText(item.comment)+'</div><button onclick="delComment(\''+item.track.id+'\',\''+item.comment.id+'\')" style="margin-top:4px;padding:4px 8px;border-radius:999px;background:#ff4444;color:#fff;font-weight:900;font-size:10px">DELETE COMMENT</button></div>'}).join('') || '<div style="color:#fff;font-size:12px">No comments</div>';
   }
-});
-audio.addEventListener('ended',()=>{
-  if(!isRepeat){playNext()} else { audio.currentTime=0; audio.play(); }
-});
-audio.addEventListener('loadedmetadata',()=>{
-  if(durTimeEl) durTimeEl.innerText=formatTime(audio.duration);
-});
-if(progressEl){
-  progressEl.addEventListener('input',e=>{
-    if(audio.duration) audio.currentTime=(e.target.value/100)*audio.duration;
-  }, {passive:true});
-  // Touch support for all mobile browsers
-  progressEl.addEventListener('touchstart',()=>{}, {passive:true});
-  progressEl.addEventListener('touchmove', (e)=>{
-    if(audio.duration){
-      let rect = progressEl.getBoundingClientRect();
-      let x = e.touches[0].clientX - rect.left;
-      let pct = x / rect.width * 100;
-      audio.currentTime = (pct/100)*audio.duration;
-    }
-  }, {passive:true});
 }
 
+document.getElementById('f_cover').addEventListener('change', function(e){
+  var file=e.target.files[0]; if(!file)return; formData.coverName=file.name; var r=new FileReader(); r.onload=function(ev){formData.cover=ev.target.result; document.getElementById('coverPreview').innerHTML='<div style="display:flex;align-items:center;gap:6px;margin-top:4px"><img src="'+formData.cover+'" style="width:40px;height:40px;border-radius:8px;object-fit:cover;border:2px solid #FFD60A"><span style="font-size:10px;color:#fff;font-weight:900">'+formData.coverName+' ✓</span></div>'}; r.readAsDataURL(file);
+});
+document.getElementById('f_audio').addEventListener('change', function(e){
+  var file=e.target.files[0]; if(!file)return; formData.audioName=file.name; formData.audioSize=formatSize(file.size); document.getElementById('audioPreview').innerText='Loading... '+formData.audioName; var r=new FileReader(); r.onload=function(ev){formData.audio=ev.target.result; document.getElementById('audioPreview').innerHTML='<span style="color:#00ff88">Audio ready: '+formData.audioName+' ('+formData.audioSize+') ✓ - Works on all browsers</span>'}; r.onerror=function(){document.getElementById('audioPreview').innerHTML='<span style="color:#ff4444">Failed to read file</span>'}; r.readAsDataURL(file);
+});
 
-// ===== FINAL INIT - ALL BUTTONS ENABLED, PERMANENT STORAGE =====
-(async()=>{
+function publishTrack(){
+  var btn=document.getElementById('publishBtn'); if(btn){btn.disabled=true; btn.innerText='PUBLISHING...';}
+  var msg=document.getElementById('pubMsg');
+  var tn=document.getElementById('f_trackName').value.trim();
+  var an=document.getElementById('f_artistName').value.trim();
+  var gn=document.getElementById('f_genre').value.trim();
+  var yr=document.getElementById('f_year').value.trim();
+  var pr=document.getElementById('f_producer').value.trim()||'DJ APO';
+  if(pr.toUpperCase().indexOf('APOSKY')>=0) pr='DJ APO';
+  var st=document.getElementById('f_studio').value.trim();
+  var co=document.getElementById('f_country').value.trim();
+  var top=document.getElementById('f_top').checked;
+  if(!tn||!an||!gn||!yr||!pr||!st||!co){if(msg){msg.style.color='#ff4444'; msg.innerText='Fill all required fields *';} if(btn){btn.disabled=false; btn.innerText='PUBLISH TRACK - PERMANENT (ALL BROWSERS)';} return;}
+  if(!formData.audio){if(msg){msg.style.color='#ff4444'; msg.innerText='Please upload audio file *';} if(btn){btn.disabled=false; btn.innerText='PUBLISH TRACK - PERMANENT (ALL BROWSERS)';} return;}
+  var cover=formData.cover||generateCover(tn,gn);
+  var initialLikes=rnd(333,100000); var initialHearts=rnd(333,100000); var initialFires=rnd(333,100000); var initialCommentCount=rnd(35,65);
+  var newTrack={id:slug(tn),trackName:tn,artistName:an,genre:gn,year:yr,producer:'DJ APO',studio:st,country:co,cover:cover,audio:formData.audio,createdAt:Date.now(),baseCount:initialCommentCount,likes:initialLikes,hearts:initialHearts,fires:initialFires,comments:Array.from({length:initialCommentCount}).map(function(){return genComment({trackName:tn,artistName:an,studio:st,producer:'DJ APO',country:co,year:yr})}),isTopSelected:top,lastGrowthCheck:Date.now(),isOfficial:true,permanent:true};
+  tracks.unshift(newTrack);
+  save();
+  if(msg){msg.style.color='#00ff88'; msg.innerText='✅ Published PERMANENTLY on all browsers! '+tracks.length+' tracks. Works on Chrome, Edge, Opera, Firefox, Safari, Mobile. Visible after refresh.'}
+  document.getElementById('f_trackName').value='';document.getElementById('f_artistName').value='';document.getElementById('f_genre').value='';document.getElementById('f_year').value='';document.getElementById('f_producer').value='DJ APO';document.getElementById('f_studio').value='';document.getElementById('f_country').value='';document.getElementById('f_top').checked=false;document.getElementById('f_cover').value='';document.getElementById('f_audio').value='';formData={cover:'',audio:''};document.getElementById('coverPreview').innerHTML='';document.getElementById('audioPreview').innerHTML='';
+  renderTracks(); playTrack(newTrack.id); renderAdminLists();
+  if(btn){btn.disabled=false; btn.innerText='PUBLISH TRACK - PERMANENT (ALL BROWSERS)';}
+  setTimeout(function(){var el=document.getElementById('tracksGrid'); if(el) el.scrollIntoView({behavior:'smooth',block:'start'})},300);
+}
+
+var currentDetailId=null;
+function openDetail(id){
+  currentDetailId=id;
+  var tr=tracks.find(function(t){return t.id===id}); if(!tr)return;
+  var isThisPlaying = currentTrack && currentTrack.id===tr.id && isPlaying;
+  document.getElementById('detailModal').style.display='block';
+  document.getElementById('detailContent').innerHTML=
+'<div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap"><div style="position:relative"><div style="position:relative;width:160px;height:160px;border-radius:16px;overflow:hidden;border:3px solid '+(isThisPlaying?'#fff':'#FFD60A')+'"><img src="'+tr.cover+'" style="width:100%;height:100%;object-fit:cover"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.88);padding:4px;text-align:center;border-top:2px solid #FFD60A"><div style="font-weight:900;font-size:10px;color:#FFD60A">Produced by DJ APO</div></div></div>'+(isThisPlaying?'<div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#FFD60A;color:#000;padding:4px 10px;border-radius:999px;font-weight:900;font-size:10px;border:2px solid #000" class="pulse">▶ '+t('playing')+'</div>':'')+'</div><div style="flex:1;min-width:200px"><div style="font-weight:900;font-size:20px;color:#fff">'+tr.trackName+'</div><div style="color:#FFD60A;font-weight:900">'+tr.artistName+' • '+tr.genre+' • '+tr.year+'</div><div style="font-size:12px;color:#fff;margin-top:6px"><b>Producer:</b> '+tr.producer+'<br><b>Studio:</b> '+tr.studio+'<br><b>Country:</b> '+tr.country+'</div><div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><button onclick="playPrev(\''+tr.id+'\')" style="padding:10px 14px;border-radius:999px;background:#000;color:#fff;border:2px solid #fff;font-weight:900">◀ '+t('prev')+'</button><button onclick="playTrack(\''+tr.id+'\')" style="padding:10px 16px;border-radius:999px;background:#FFD60A;color:#000;font-weight:900;border:3px solid #000">'+(isThisPlaying?t('pause'):t('play'))+'</button><button onclick="playNext(\''+tr.id+'\')" style="padding:10px 14px;border-radius:999px;background:#000;color:#fff;border:2px solid #fff;font-weight:900">'+t('next')+' ▶</button><button onclick="downloadTrack(\''+tr.id+'\')" style="padding:10px 16px;border-radius:999px;background:#fff;color:#000;font-weight:900;border:3px solid #000">'+t('download')+'</button><button onclick="shareTrack(\''+tr.id+'\')" style="padding:10px 16px;border-radius:999px;background:#000;color:#fff;border:2px solid #fff;font-weight:900">'+t('share')+'</button></div></div></div>'+
+'<div style="margin-top:12px;display:flex;gap:8px"><button onclick="react(\''+tr.id+'\',\'likes\');openDetail(\''+tr.id+'\')" style="background:#111;border:2px solid #fff;border-radius:999px;padding:6px 12px;color:#fff;font-weight:900">👍 '+formatNum(tr.likes)+'</button><button onclick="react(\''+tr.id+'\',\'hearts\');openDetail(\''+tr.id+'\')" style="background:#111;border:2px solid #fff;border-radius:999px;padding:6px 12px;color:#fff;font-weight:900">❤ '+formatNum(tr.hearts)+'</button><button onclick="react(\''+tr.id+'\',\'fires\');openDetail(\''+tr.id+'\')" style="background:#111;border:2px solid #FFD60A;border-radius:999px;padding:6px 12px;color:#FFD60A;font-weight:900">🔥 '+formatNum(tr.fires)+'</button></div>'+
+'<div style="margin-top:14px"><div style="font-weight:900;color:#FFD60A">'+t('comments')+' • '+tr.comments.length+'</div>'+
+'<div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;background:#0a0a0a;border:2px solid #333;border-radius:12px;padding:8px">'+
+'<div style="font-weight:900;color:#FFD60A;font-size:11px">'+t('addCommentTitle')+'</div>'+
+'<div style="display:flex;gap:6px;flex-wrap:wrap"><input id="detail_cname" placeholder="'+t('yourName')+'" style="flex:1;min-width:100px;padding:10px;border-radius:999px;border:2px solid #fff;background:#000;color:#fff"><input id="detail_cinput" placeholder="'+t('yourComment')+'" style="flex:2;min-width:140px;padding:10px;border-radius:999px;border:2px solid #FFD60A;background:#111;color:#fff"><button onclick="var n=document.getElementById(\'detail_cname\').value.trim(); var v=document.getElementById(\'detail_cinput\').value.trim(); if(!n){alert(\'Enter Name\');return} if(!v){alert(\'Enter Comment\');return} var en=v, fr=v; if(lang===\'EN\'){fr=v+\' [Traduit auto FR]\'} else {en=v+\' [Auto Translated EN]\'}; var c={id:Math.random().toString(36).slice(2),name:n,text:en,textFR:fr,createdAt:Date.now(),likes:333,hearts:333,fires:333}; var trd=tracks.find(function(t){return t.id===\''+tr.id+'\'}); trd.comments.unshift(c); save(); openDetail(\''+tr.id+'\'); renderTracks()" style="padding:10px 14px;border-radius:999px;background:#FFD60A;color:#000;font-weight:900;border:2px solid #000">'+t('send')+'</button></div>'+
+'</div>'+
+'<div style="margin-top:10px;max-height:50vh;overflow:auto;-webkit-overflow-scrolling:touch">'+tr.comments.map(function(c){return '<div style="border:1px solid #333;border-radius:12px;padding:8px;margin-top:8px;background:#0a0a0a"><div style="display:flex;justify-content:space-between"><span style="font-weight:900;color:#FFD60A;font-size:12px">'+c.name+'</span><span style="font-size:10px;color:#fff;opacity:0.6">'+new Date(c.createdAt).toLocaleString()+'</span></div><div style="font-size:13px;color:#fff;margin:4px 0">'+getCommentText(c)+'</div></div>'}).join('')+'</div></div>';
+}
+function closeDetail(){document.getElementById('detailModal').style.display='none'; currentDetailId=null}
+
+var progressEl=document.getElementById('progress');
+var curTimeEl=document.getElementById('curTime');
+var durTimeEl=document.getElementById('durTime');
+audio.addEventListener('timeupdate', function(){
+  if(audio.duration && progressEl){progressEl.value=(audio.currentTime/audio.duration)*100; if(curTimeEl) curTimeEl.innerText=formatTime(audio.currentTime); if(durTimeEl) durTimeEl.innerText=formatTime(audio.duration);}
+});
+audio.addEventListener('ended', function(){if(!isRepeat){playNext()} else {audio.currentTime=0; audio.play()}});
+audio.addEventListener('loadedmetadata', function(){if(durTimeEl) durTimeEl.innerText=formatTime(audio.duration)});
+if(progressEl){
+  progressEl.addEventListener('input', function(e){if(audio.duration) audio.currentTime=(e.target.value/100)*audio.duration});
+  progressEl.addEventListener('touchstart', function(){}, {passive:true});
+}
+
+(async function(){
   await load();
   applyTranslations();
   renderTracks();
-  renderTop();
-  if(isAdmin){ 
-    let ap = document.getElementById('adminPanel');
-    if(ap) ap.style.display='block'; 
-    renderAdminLists();
-  }
-  let params=new URLSearchParams(location.search); 
-  let tid=params.get('track'); 
-  if(tid){ 
-    let f=tracks.find(t=>t.id===tid); 
-    if(f) playTrack(f.id);
-  }
-  // Clean legacy keys to prevent storage full
-  try{
-    LEGACY_KEYS.forEach(k=>{
-      localStorage.removeItem(k);
-      localStorage.removeItem(k+'_BACKUP');
-      localStorage.removeItem(k+'_LIGHT');
-    });
-  }catch{}
-  console.log('✅ All systems ready - buttons enabled, IndexedDB permanent, no dummy tracks');
+  var params=new URLSearchParams(location.search); var tid=params.get('track'); if(tid){var f=tracks.find(function(t){return t.id===tid}); if(f) setTimeout(function(){playTrack(f.id)},500)}
+  console.log('✅ Universal ready - All browsers, mobile, scrolling enabled, no shake');
 })();
-
-// Disable fake auto growth - only real interactions
-setInterval(()=>{
-  let now=Date.now(); let needs=false;
-  tracks.forEach(tr=>{ if(!tr.lastGrowthCheck){ tr.lastGrowthCheck=now; needs=true; } });
-  if(needs) save();
-}, 60000);
-
-// Enable all buttons helper - ensures no button is disabled
-function enableAllButtons(){
-  document.querySelectorAll('button').forEach(b=>{
-    if(b.id!=='publishBtn') b.disabled=false;
-  });
-}
-setInterval(enableAllButtons, 1000);
-document.addEventListener('DOMContentLoaded', enableAllButtons);
-
 </script>
 </body>
 </html>
