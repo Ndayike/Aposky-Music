@@ -74,7 +74,19 @@ input{font-family:Arial !important}
   transform:translateZ(0);
 }
 </style>
+
+<!-- Firebase SDK - Free backend for universal sync -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<style>
+.firebase-badge{position:fixed;top:10px;left:10px;background:#000;border:2px solid #00ff88;color:#00ff88;padding:6px 12px;border-radius:999px;font-weight:900;font-size:10px;z-index:10002;display:none}
+.firebase-badge.offline{border-color:#ff4444;color:#ff4444}
+.firebase-badge.syncing{border-color:#FFD60A;color:#FFD60A}
+</style>
 </head>
+
 <body>
 <div style="max-width:1440px;margin:0 auto;padding:12px 12px 160px 12px;">
 
@@ -204,7 +216,7 @@ let formData={cover:'',audio:'',coverName:'',audioName:'',audioSize:''};
 
 const DICT = {
   EN: {headerTitle:"APOSKY MUSIC | INTERNATIONAL",modernProd:"MODERN PRODUCTION",bestMusic:"BEST MUSIC, BEST PRODUCER",pubZone:"PUBLISHER'S ZONE",explore:"EXPLORE MUSIC",headphone:"FOR BEST EXPERIENCE, USE HEADPHONES",headphoneSub:"FOR BEST EXPERIENCE, USE HEADPHONES",tagline:"Discover the finest African and international music by DJ APO. Stream, download, and share tracks crafted with modern production excellence.",playlistTitle:"BURUNDI ELECTION 2027 - Official Selection",playlistSub:"Top selected tracks curated for the national celebration",clear:"CLEAR",ctaTitle:"DO YOU WANT TO MAKE A SONG?",chatWa:"CHAT ON WHATSAPP ↗",latest:"Latest Releases",playing:"PLAYING",nowPlaying:"NOW PLAYING",paused:"PAUSED",play:"PLAY",pause:"PAUSE",prev:"PREV",next:"NEXT",download:"DOWNLOAD",share:"SHARE",send:"SEND",yourName:"Your Name",yourComment:"Your Comment...",addCommentTitle:"ADD COMMENT - Name + Comment (Permanent) - Auto Translated",comments:"COMMENTS",viewAll:"VIEW ALL",noTop:"No top tracks yet - admin can add via PUBLISHER ZONE",searchPh:"Search track, artist, genre...",autoNote:"💬 comments • Auto-translated when language changes"},
-  FR: {headerTitle:"APOSKY MUSIC | INTERNATIONAL",modernProd:"PRODUCTION MODERNE",bestMusic:"MEILLEURE MUSIQUE, MEILLEUR PRODUCTEUR",pubZone:"ZONE EDITEUR",explore:"EXPLORER MUSIQUE",headphone:"POUR UNE MEILLEURE EXPERIENCE, UTILISEZ LES ECOUTEURS",headphoneSub:"POUR UNE MEILLEURE EXPERIENCE, UTILISEZ LES ECOUTEURS",tagline:"Découvrez la meilleure musique africaine et internationale de DJ APO. Écoutez, téléchargez et partagez des morceaux créés avec une excellence de production moderne.",playlistTitle:"ELECTION BURUNDI 2027 - Sélection Officielle",playlistSub:"Morceaux sélectionnés pour la célébration nationale",clear:"EFFACER",ctaTitle:"VOULEZ-VOUS CREER UNE CHANSON?",chatWa:"DISCUTER SUR WHATSAPP ↗",latest:"Dernières Sorties",playing:"EN COURS",nowPlaying:"LECTURE EN COURS",paused:"EN PAUSE",play:"JOUER",pause:"PAUSE",prev:"PREC",next:"SUIV",download:"TELECHARGER",share:"PARTAGER",send:"ENVOYER",yourName:"Votre Nom",yourComment:"Votre Commentaire...",addCommentTitle:"AJOUTER COMMENTAIRE - Nom + Commentaire (Permanent) - Traduit Automatiquement",comments:"COMMENTAIRES",viewAll:"VOIR TOUS",noTop:"Pas encore de morceaux top - admin peut ajouter via ZONE EDITEUR",searchPh:"Rechercher morceau, artiste, genre...",autoNote:"💬 commentaires • Traduits automatiquement quand langue change"}
+  FR: {headerTitle:"APOSKY MUSIC | INTERNATIONAL",modernProd:"PRODUCTION MODERNE",bestMusic:"MEILLEURE MUSIQUE, MEILLEUR PRODUCTEUR",pubZone:"ZONE EDITEUR",explore:"EXPLORER MUSIQUE",headphone:"POUR UNE MEILLEURE EXPERIENCE, UTILISEZ UN CASQUE",headphoneSub:"POUR UNE MEILLEURE EXPERIENCE, UTILISEZ UN CASQUE",tagline:"Découvrez la meilleure musique africaine et internationale de DJ APO. Écoutez, téléchargez et partagez des morceaux créés avec une excellence de production moderne.",playlistTitle:"ELECTION BURUNDI 2027 - Sélection Officielle",playlistSub:"Morceaux sélectionnés pour la célébration nationale",clear:"EFFACER",ctaTitle:"VOULEZ-VOUS CREER UNE CHANSON?",chatWa:"DISCUTER SUR WHATSAPP ↗",latest:"Dernières Sorties",playing:"EN COURS",nowPlaying:"LECTURE EN COURS",paused:"EN PAUSE",play:"JOUER",pause:"PAUSE",prev:"PREC",next:"SUIV",download:"TELECHARGER",share:"PARTAGER",send:"ENVOYER",yourName:"Votre Nom",yourComment:"Votre Commentaire...",addCommentTitle:"AJOUTER COMMENTAIRE - Nom + Commentaire (Permanent) - Traduit Automatiquement",comments:"COMMENTAIRES",viewAll:"VOIR TOUS",noTop:"Pas encore de morceaux top - admin peut ajouter via ZONE EDITEUR",searchPh:"Rechercher morceau, artiste, genre...",autoNote:"💬 commentaires • Traduits automatiquement quand langue change"}
 };
 const NAMES = ["Aline K.","Moussa D.","Grace U.","Jean-Paul B.","Fatima N.","Samuel O.","Chloé M.","David K.","Iman T.","Patrick R.","Esperance I.","Cedric L.","Aisha J.","Kevin N.","Josiane H.","Eric M.","Naomi Z.","Blaise K.","Sandra W.","Yves T.","Lina S.","Abdou S.","Mireille P.","Oliver G.","Esther B.","Fabrice N.","Ines K.","Luc M.","Ruth A."];
 const TEMPLATES_EN = ["This chorus is pure fire! 🔥","Vocals are heavenly, chills!","Best studio sound in Burundi, respect to {studio}!","Verse 2 killed me, so deep.","{artist} never disappoints!","Producer {producer} is a genius.","That bassline is insane!","On repeat all day!","Modern production at its best!","Mix so clean, {studio} did great.","Bringing African sound to world!","Style unique, love vibe.","Chorus stuck in head since morning.","Artist vocals so powerful!","From {country} to world, big up!","DJ APO best music!","Intro alone worth it.","Fire beat, fire lyrics 🔥🔥","Favorite track {year}!","Emotional, real music."];
@@ -571,12 +583,69 @@ if(progressEl){
   progressEl.addEventListener('touchstart', function(){}, {passive:true});
 }
 
+function openFirebaseSetup(){
+  var panel=document.getElementById('firebaseSetupPanel');
+  if(panel) panel.style.display = panel.style.display==='none' ? 'block' : 'none';
+  var statusEl=document.getElementById('firebaseStatusText');
+  if(statusEl){
+    if(isFirebaseConfigured()){
+      statusEl.innerText='Configured: '+firebaseConfig.projectId+' - '+(firebaseConnected?'Connected worldwide':'Not connected');
+      statusEl.style.color='#00ff88';
+    } else {
+      statusEl.innerText='Not configured - Local only. Paste config to enable worldwide sync.';
+      statusEl.style.color='#ff4444';
+    }
+  }
+  var input=document.getElementById('firebaseConfigInput');
+  if(input && isFirebaseConfigured()){input.value=JSON.stringify(firebaseConfig)}
+}
+function saveFirebaseConfig(){
+  var input=document.getElementById('firebaseConfigInput');
+  var msg=document.getElementById('firebaseSetupMsg');
+  if(!input||!input.value.trim()){if(msg){msg.style.color='#ff4444';msg.innerText='Paste config JSON first'}return}
+  try{
+    var cfg=JSON.parse(input.value.trim());
+    if(!cfg.apiKey||!cfg.projectId){throw new Error('Invalid config - need apiKey and projectId')}
+    localStorage.setItem('aposky_firebase_config', JSON.stringify(cfg));
+    firebaseConfig=cfg;
+    firebaseConnected=false;
+    if(msg){msg.style.color='#00ff88';msg.innerText='✅ Config saved! Connecting...'}
+    if(initFirebase()){
+      listenFirebaseTracks();
+      if(msg) msg.innerText='✅ Connected worldwide! Now publishing will appear instantly on all browsers & phones!';
+      updateFirebaseBadge('','🌍 WORLDWIDE LIVE • '+firebaseConfig.projectId);
+    }
+  }catch(e){
+    if(msg){msg.style.color='#ff4444';msg.innerText='Error: '+e.message}
+  }
+}
+
 (async function(){
+  // Try Firebase first for worldwide sync
+  var firebaseReady = false;
+  if(isFirebaseConfigured()){
+    firebaseReady = initFirebase();
+    if(firebaseReady){
+      var listening = listenFirebaseTracks();
+      if(listening){
+        console.log('🌍 Firebase worldwide mode - tracks will sync instantly across all browsers');
+        // Also load local as fallback while waiting for Firebase
+        await load();
+        applyTranslations();
+        renderTracks();
+        return; // Firestore listener will update tracks
+      }
+    }
+  }
+  // Fallback to local storage
   await load();
   applyTranslations();
   renderTracks();
   var params=new URLSearchParams(location.search); var tid=params.get('track'); if(tid){var f=tracks.find(function(t){return t.id===tid}); if(f) setTimeout(function(){playTrack(f.id)},500)}
-  console.log('✅ Universal ready - All browsers, mobile, scrolling enabled, no shake');
+  console.log('✅ Universal ready - Local mode. Configure Firebase for worldwide sync.');
+  if(!isFirebaseConfigured()){
+    updateFirebaseBadge('offline','LOCAL ONLY - Setup Firebase for Worldwide');
+  }
 })();
 </script>
 </body>
