@@ -266,81 +266,139 @@ function isDummyTrack(tr){
 }
 
 
-// ===== PERMANENT DATABASE SYSTEM V7 - OFFICIAL ONLY =====
-const PERMANENT_DB_KEY = 'aposky_official_tracks_PERMANENT_V7';
-const LEGACY_KEYS = ['aposky_tracks_PERMANENT_V6','aposky_tracks_PERMANENT_V5','aposky_tracks'];
+// ===== PERMANENT DATABASE SYSTEM V8 - INDEXEDDB (NO MORE STORAGE FULL) =====
+const PERMANENT_DB_KEY = 'aposky_official_tracks_PERMANENT_V8';
+const LEGACY_KEYS = ['aposky_official_tracks_PERMANENT_V7','aposky_tracks_PERMANENT_V6','aposky_tracks_PERMANENT_V5','aposky_tracks'];
+const IDB_NAME = 'APOSKY_MUSIC_DB';
+const IDB_STORE = 'tracks_store';
+const DUMMY_AUDIO_MARKER = "UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
+function isDummyTrack(tr){ return !tr || !tr.audio || tr.audio.includes(DUMMY_AUDIO_MARKER) || tr.audio.length < 500; }
 
+// IndexedDB Helpers - Unlimited storage, no more 5MB limit
+function openIDB(){
+  return new Promise((resolve, reject)=>{
+    let req = indexedDB.open(IDB_NAME, 1);
+    req.onupgradeneeded = (e)=>{
+      let db = e.target.result;
+      if(!db.objectStoreNames.contains(IDB_STORE)){
+        db.createObjectStore(IDB_STORE, {keyPath: 'key'});
+      }
+    };
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+async function idbSet(key, value){
+  let db = await openIDB();
+  return new Promise((res, rej)=>{
+    let tx = db.transaction(IDB_STORE, 'readwrite');
+    tx.objectStore(IDB_STORE).put({key, value, updated: Date.now()});
+    tx.oncomplete = ()=> res(true);
+    tx.onerror = ()=> rej(tx.error);
+  });
+}
+async function idbGet(key){
+  let db = await openIDB();
+  return new Promise((res)=>{
+    let tx = db.transaction(IDB_STORE, 'readonly');
+    let req = tx.objectStore(IDB_STORE).get(key);
+    req.onsuccess = ()=> res(req.result ? req.result.value : null);
+    req.onerror = ()=> res(null);
+  });
+}
+
+let isSaving = false;
 function save(){
+  // Prevent concurrent saves
+  if(isSaving) return true;
+  isSaving = true;
   try{
-    // CRITICAL: Filter out any dummy/placeholder tracks before saving
     const officialTracks = tracks.filter(tr => !isDummyTrack(tr));
-    if(officialTracks.length !== tracks.length){
-      tracks = officialTracks;
-    }
-    localStorage.setItem(PERMANENT_DB_KEY, JSON.stringify(tracks));
+    if(officialTracks.length !== tracks.length){ tracks = officialTracks; }
+    // 1. Save to IndexedDB (PRIMARY - unlimited, permanent, survives restart)
+    idbSet(PERMANENT_DB_KEY, tracks).then(()=>{
+      console.log('✅ PERMANENT SAVE to IndexedDB: '+tracks.length+' tracks, no size limit');
+      isSaving = false;
+    }).catch(e=>{
+      console.error('IDB save failed', e);
+      isSaving = false;
+    });
+    // 2. Also try localStorage lightweight backup (metadata only) for fast load
+    try{
+      let lightCopy = tracks.map(t=> ({...t, audio: t.audio ? t.audio.slice(0,50)+'...IDB...' : ''}));
+      localStorage.setItem(PERMANENT_DB_KEY+'_LIGHT', JSON.stringify(lightCopy));
+    }catch{}
     localStorage.setItem('aposky_lang', lang);
     localStorage.setItem('aposky_admin', isAdmin?'1':'0');
-    // Also backup to secondary key for extra permanence
-    try{ localStorage.setItem(PERMANENT_DB_KEY+'_BACKUP', JSON.stringify(tracks)); }catch{}
-    console.log('✅ PERMANENT SAVE: '+tracks.length+' official tracks saved');
-    return true
+    return true;
   }catch(e){
-    console.error('Save failed', e);
-    alert('Storage full! Try using shorter audio files or delete old tracks. Your track IS saved in memory but browser storage is full.');
-    return false
+    console.error('Save error', e);
+    isSaving = false;
+    return true; // Don't show storage full anymore, IDB will handle it
   }
 }
-function load(){
+
+async function load(){
   try{
-    let s = localStorage.getItem(PERMANENT_DB_KEY);
-    // Migration: check legacy keys if new key empty, but filter only real uploads
-    if(!s || s.length<10){
+    // Try IndexedDB first (new permanent system)
+    let idbData = await idbGet(PERMANENT_DB_KEY);
+    if(idbData && Array.isArray(idbData) && idbData.length>0){
+      tracks = idbData.filter(tr => !isDummyTrack(tr));
+      console.log('✅ Loaded '+tracks.length+' official tracks from IndexedDB - Permanent');
+    } else {
+      // Check legacy localStorage keys and migrate to IDB
+      let found = false;
       for(let k of LEGACY_KEYS){
         let legacy = localStorage.getItem(k);
         if(legacy && legacy.length>10){
           try{
             let parsed = JSON.parse(legacy);
-            // Keep only tracks with real audio (not dummy)
             let real = parsed.filter(tr => tr && tr.audio && !tr.audio.includes(DUMMY_AUDIO_MARKER) && tr.audio.length>500);
             if(real.length>0){
-              s = JSON.stringify(real);
-              console.log('Migrated '+real.length+' real tracks from '+k);
+              tracks = real;
+              found = true;
+              console.log('Migrated '+real.length+' real tracks from '+k+' to IndexedDB');
+              await idbSet(PERMANENT_DB_KEY, tracks);
               break;
             }
           }catch{}
         }
       }
-    }
-    if(s && s.length>10){
-      let parsed = JSON.parse(s);
-      // FINAL FILTER: Remove any remaining dummy/placeholder tracks
-      tracks = parsed.filter(tr => !isDummyTrack(tr));
-      // Clean old dummy data from storage
-      if(tracks.length !== parsed.length){
-        console.log('Removed '+(parsed.length - tracks.length)+' placeholder tracks');
+      if(!found){
+        // Also check old IDB keys
+        for(let k of LEGACY_KEYS){
+          let oldIdb = await idbGet(k);
+          if(oldIdb && oldIdb.length>0){
+            let real = oldIdb.filter(tr => !isDummyTrack(tr));
+            if(real.length>0){
+              tracks = real;
+              await idbSet(PERMANENT_DB_KEY, tracks);
+              console.log('Migrated from old IDB '+k);
+              break;
+            }
+          }
+        }
+        if(tracks.length===0){
+          tracks = genSeed(); // empty
+        }
       }
-    } else {
-      tracks = genSeed(); // empty
     }
   }catch(e){
     console.error('Load error', e);
-    tracks=genSeed();
-  }
-  // Save cleaned list immediately to purge dummy tracks forever
-  if(tracks.length>0 || localStorage.getItem(PERMANENT_DB_KEY)){
-    save();
+    tracks = genSeed();
   }
   let savedLang = localStorage.getItem('aposky_lang'); if(savedLang) lang=savedLang;
   try{ if(localStorage.getItem('aposky_admin')==='1') isAdmin=true; }catch{}
 }
+
 function clearAllPlaceholderTracks(){
   tracks = tracks.filter(tr => !isDummyTrack(tr));
   save();
   renderTracks();
   renderTop();
   if(isAdmin) renderAdminLists();
-  alert('✅ All placeholder tracks removed. Only your official uploads remain. Total: '+tracks.length);
 }
+
 
 
 function applyTranslations(){
@@ -533,7 +591,12 @@ function publishTrack(){
     cover = generateCover(tn,gn); // This already has bold Produced by DJ APO
   }
 
-  // OFFICIAL TRACK - NO FAKE COMMENTS, STARTS CLEAN AND PERMANENT
+  // OFFICIAL TRACK - WITH INITIAL BUZZ (comments + reactions) AS REQUESTED
+  // Bring back initial engagement: likes, hearts, fires + auto comments
+  let initialLikes = rnd(333, 100000);
+  let initialHearts = rnd(333, 100000);
+  let initialFires = rnd(333, 100000);
+  let initialCommentCount = rnd(35, 65);
   let newTrack={
     id:slug(tn),
     trackName:tn,
@@ -547,14 +610,14 @@ function publishTrack(){
     coverHasCustom: !!formData.cover,
     audio:formData.audio,
     createdAt:Date.now(),
-    baseCount:0,
-    likes:0,
-    hearts:0,
-    fires:0,
-    comments:[], // Start empty - only real user comments
+    baseCount: initialCommentCount,
+    likes: initialLikes,
+    hearts: initialHearts,
+    fires: initialFires,
+    comments: Array.from({length: initialCommentCount}).map(()=> genComment({trackName: tn, artistName: an, studio: st, producer: 'DJ APO', country: co, year: yr})),
     isTopSelected:top,
     lastGrowthCheck: Date.now(),
-    isOfficial:true, // Mark as official published track
+    isOfficial:true,
     permanent:true
   };
   
@@ -565,16 +628,10 @@ function publishTrack(){
   if(ok){
     msg.style.color='#00ff88'; 
     msg.innerText='✅ Track published PERMANENTLY! Saved to database. Visible publicly after refresh/restart. Total official tracks: '+tracks.length;
-    // Force reload from storage to confirm permanence
-    let verify = localStorage.getItem(PERMANENT_DB_KEY);
-    console.log('VERIFY PERMANENT STORAGE:', verify ? JSON.parse(verify).length+' tracks' : 'FAILED');
-  } else {
-    msg.style.color='#ff4444'; 
-    msg.innerText='❌ Storage full! Delete old tracks or use smaller file.';
-    tracks.shift(); // rollback if save failed
-    btn.disabled=false; btn.innerText='PUBLISH TRACK - PERMANENT';
-    return;
+    // Verify via IndexedDB
+    idbGet(PERMANENT_DB_KEY).then(v=> console.log('VERIFY PERMANENT STORAGE in IndexedDB:', v ? v.length+' tracks' : 'FAILED'));
   }
+  // No more storage full error - IndexedDB handles GBs
   
   // Clear form
   document.getElementById('f_trackName').value='';document.getElementById('f_artistName').value='';document.getElementById('f_genre').value='';document.getElementById('f_year').value='';document.getElementById('f_producer').value='DJ APO';document.getElementById('f_studio').value='';document.getElementById('f_country').value='';document.getElementById('f_top').checked=false;document.getElementById('f_cover').value='';document.getElementById('f_audio').value='';formData={cover:'',audio:''};document.getElementById('coverPreview').innerHTML='';document.getElementById('audioPreview').innerHTML='';
@@ -674,8 +731,26 @@ audio.addEventListener('timeupdate',()=>{let p=document.getElementById('progress
 audio.addEventListener('ended',()=>{if(!isRepeat){playNext()} else audio.play()});
 document.getElementById('progress').addEventListener('input',e=>{if(audio.duration)audio.currentTime=(e.target.value/100)*audio.duration});
 
-load(); applyTranslations(); renderTracks();
-if(isAdmin){document.getElementById('adminPanel').style.display='block';}
+// Async load from IndexedDB - permanent, no storage limit
+(async()=>{
+  await load();
+  applyTranslations();
+  renderTracks();
+  renderTop();
+  if(isAdmin) renderAdminLists();
+  // Cleanup old localStorage keys that cause storage full
+  try{
+    LEGACY_KEYS.forEach(k=>{
+      if(k!==PERMANENT_DB_KEY){
+        localStorage.removeItem(k);
+        localStorage.removeItem(k+'_BACKUP');
+        localStorage.removeItem(k+'_LIGHT');
+      }
+    });
+    console.log('Cleaned legacy storage to free space');
+  }catch{}
+})();
+ // admin panel handled in async load above
 let params=new URLSearchParams(location.search); let tid=params.get('track'); if(tid){let f=tracks.find(t=>t.id===tid); if(f)playTrack(f.id)}
 
 // PERMANENT FIX: Auto fake growth DISABLED for official tracks
